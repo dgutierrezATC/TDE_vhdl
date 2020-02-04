@@ -1,4 +1,4 @@
-# TDE_vhdl
+# TDE vhdl
 Spike-based, VHDL, generic TDE model on FPGA for neuromorphic sensors.
 
 # Block diagram
