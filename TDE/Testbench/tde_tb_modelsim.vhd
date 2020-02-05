@@ -85,21 +85,23 @@ architecture Behavioral of tde_tb is
     signal o_output_spike   : std_logic;
 
     -- clock
-    constant c_i_clock_period : time := 20 ns;
+    constant c_i_clock_period : time := 20 ns; -- 50 MHz clock
 
     ---------------------------------------------------------------------------
     -- Testbench signals declaration
     ---------------------------------------------------------------------------
-
+	-- Simulator options: CHECK BEFORE RUN!
+	constant c_is_ModelSim : boolean := true; -- If true, ModelSIM should be used. If false, VivadoSim should be used.
+	constant c_absolute_path : string := "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Testbench/Results/Files/"; -- Absolute path to the testbench files
+	
     -- Clock divisor value
     constant c_i_tr_tick_divisor_value : integer range 0 to 100 := 50;  -- Clock divisor value
 
     -- Saving results in a file
-    signal tb_end_of_simulation : std_logic := '0'; -- Flag to indicate the end
-                                                    -- of the simulation
-	file f_faci_spike : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/input_faci_spikes.txt";  -- Input facilitatory spikes
-	file f_trig_spike : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/input_trig_spikes.txt";  -- Input trigger spikes
-    file f_out_spikes : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/output_spikes.txt";  -- Output spikes from the TDE model
+    signal tb_end_of_simulation : std_logic := '0'; -- Flag to indicate the end of the simulation
+	file f_faci_spike : text open write_mode is c_absolute_path & "input_faci_spikes.txt";  -- Input facilitatory spikes
+	file f_trig_spike : text open write_mode is c_absolute_path & "input_trig_spikes.txt";  -- Input trigger spikes
+    file f_out_spikes : text open write_mode is c_absolute_path & "output_spikes.txt";  -- Output spikes from the TDE model
 	
 	---------------------------------------------------------------------------
     -- ONLY IN MODELSIM
@@ -114,13 +116,13 @@ architecture Behavioral of tde_tb is
 	signal spy_spikegen_clk_div : std_logic_vector((g_NBITS - 1) downto 0); -- Result of the subtraction
 	
 	-- Files for saving the results
-	file f_faci_timer_val : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/faci_timer.txt";  -- Values of the internal faci_timer
-	file f_faci_timer_val_weighted : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/faci_timer_weighted.txt";  -- Values of the internal faci_timer
+	file f_faci_timer_val : text open write_mode is c_absolute_path & "faci_timer.txt";  -- Values of the internal faci_timer
+	file f_faci_timer_val_weighted : text open write_mode is c_absolute_path & "faci_timer_weighted.txt";  -- Values of the internal faci_timer
 	
-	file f_trigg_timer_val : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/trigg_timer.txt";  -- Values of the internal faci_timer
-	file f_trigg_timer_val_weighted : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/trigg_timer_weighted.txt";  -- Values of the internal faci_timer
+	file f_trigg_timer_val : text open write_mode is c_absolute_path & "trigg_timer.txt";  -- Values of the internal faci_timer
+	file f_trigg_timer_val_weighted : text open write_mode is c_absolute_path & "trigg_timer_weighted.txt";  -- Values of the internal faci_timer
 	
-	file f_sgen_clkdiv_val : text open write_mode is "D:/Universidad/Repositorios/SVN/NAS_sEMD/TDE_hdl/Model/Testbench/v3/Results/msim_results/sgen_clkdiv.txt";  -- Values of the internal faci_timer
+	file f_sgen_clkdiv_val : text open write_mode is c_absolute_path & "sgen_clkdiv.txt";  -- Values of the internal faci_timer
 	---------------------------------------------------------------------------
     -- ONLY IN MODELSIM
     ---------------------------------------------------------------------------
@@ -569,182 +571,183 @@ begin  -- architecture Behavioral
     -- ONLY IN MODELSIM                                                        *
     ---------------------------------------------------------------------------*
 	--**************************************************************************
-	
-	---------------------------------------------------------------------------
-    -- Facilitatory timer value
-    ---------------------------------------------------------------------------
-	p_spying_facilitation_timer_value: process
-	begin
-		init_signal_spy("/tde_tb/DUT/w_facilitation_timer_value","/spy_facilitatory_timer_value", 1);
-		wait;
-	end process p_spying_facilitation_timer_value;
-	
-	-- purpose: Saving out the facilitatory internal timer value
-    -- type   : 
-    -- inputs : 
-    -- outputs: 
-    p_saving_spy_facilitation_timer_value: process (i_tr_tick) is --spy_facilitatory_timer_value) is
-        variable v_OLINE        : line;
-        variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
-        variable sim_time_len_v : natural;
-        variable signal_value   : integer := 0;
-    begin  -- process p_saving_spy_facilitation_timer_value
-		if tb_end_of_simulation = '1' then
-            file_close(f_faci_timer_val);
-		else
-			sim_time_len_v := time'image(now)'length;
-			sim_time_str_v := (others => ' ');
-			sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-			signal_value := to_integer(unsigned(spy_facilitatory_timer_value));
+	g_modelSim_gen: if c_is_ModelSim = true generate
+		---------------------------------------------------------------------------
+		-- Facilitatory timer value
+		---------------------------------------------------------------------------
+		p_spying_facilitation_timer_value: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_facilitation_timer_value","/spy_facilitatory_timer_value", 1);
+			wait;
+		end process p_spying_facilitation_timer_value;
+		
+		-- purpose: Saving out the facilitatory internal timer value
+		-- type   : 
+		-- inputs : 
+		-- outputs: 
+		p_saving_spy_facilitation_timer_value: process (i_tr_tick) is --spy_facilitatory_timer_value) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable signal_value   : integer := 0;
+		begin  -- process p_saving_spy_facilitation_timer_value
+			if tb_end_of_simulation = '1' then
+				file_close(f_faci_timer_val);
+			else
+				sim_time_len_v := time'image(now)'length;
+				sim_time_str_v := (others => ' ');
+				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+				signal_value := to_integer(unsigned(spy_facilitatory_timer_value));
 
-			write(v_OLINE, signal_value);
-			write(v_OLINE, ';', right, 1);
-			write(v_OLINE, sim_time_str_v, right, 1);
-			writeline(f_faci_timer_val, v_OLINE);
-		end if;
+				write(v_OLINE, signal_value);
+				write(v_OLINE, ';', right, 1);
+				write(v_OLINE, sim_time_str_v, right, 1);
+				writeline(f_faci_timer_val, v_OLINE);
+			end if;
 
-    end process p_saving_spy_facilitation_timer_value;
-	
-	---------------------------------------------------------------------------
-    -- Facilitatory timer value weighted
-    ---------------------------------------------------------------------------
-	p_spying_facilitation_timer_value_weighted: process
-	begin
-		init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_facilitatory_timer_value_weighted", 1);
-		wait;
-	end process p_spying_facilitation_timer_value_weighted;
-	
-	-- purpose: Saving out the facilitatory internal timer value weighted
-    -- type   : 
-    -- inputs : 
-    -- outputs: 
-    p_saving_spy_facilitation_timer_value_weighted: process (i_tr_tick) is --spy_facilitatory_timer_value_weighted) is
-        variable v_OLINE        : line;
-        variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
-        variable sim_time_len_v : natural;
-        variable signal_value   : integer := 0;
-    begin  -- process p_saving_spy_facilitation_timer_value
-		if tb_end_of_simulation = '1' then
-            file_close(f_faci_timer_val_weighted);
-		else
-			sim_time_len_v := time'image(now)'length;
-			sim_time_str_v := (others => ' ');
-			sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-			signal_value := to_integer(unsigned(spy_facilitatory_timer_value_weighted));
+		end process p_saving_spy_facilitation_timer_value;
+		
+		---------------------------------------------------------------------------
+		-- Facilitatory timer value weighted
+		---------------------------------------------------------------------------
+		p_spying_facilitation_timer_value_weighted: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_facilitatory_timer_value_weighted", 1);
+			wait;
+		end process p_spying_facilitation_timer_value_weighted;
+		
+		-- purpose: Saving out the facilitatory internal timer value weighted
+		-- type   : 
+		-- inputs : 
+		-- outputs: 
+		p_saving_spy_facilitation_timer_value_weighted: process (i_tr_tick) is --spy_facilitatory_timer_value_weighted) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable signal_value   : integer := 0;
+		begin  -- process p_saving_spy_facilitation_timer_value
+			if tb_end_of_simulation = '1' then
+				file_close(f_faci_timer_val_weighted);
+			else
+				sim_time_len_v := time'image(now)'length;
+				sim_time_str_v := (others => ' ');
+				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+				signal_value := to_integer(unsigned(spy_facilitatory_timer_value_weighted));
 
-			write(v_OLINE, signal_value);
-			write(v_OLINE, ';', right, 1);
-			write(v_OLINE, sim_time_str_v, right, 1);
-			writeline(f_faci_timer_val_weighted, v_OLINE);
-		end if;
+				write(v_OLINE, signal_value);
+				write(v_OLINE, ';', right, 1);
+				write(v_OLINE, sim_time_str_v, right, 1);
+				writeline(f_faci_timer_val_weighted, v_OLINE);
+			end if;
 
-    end process p_saving_spy_facilitation_timer_value_weighted;
-	
-	---------------------------------------------------------------------------
-    -- Trigger timer value
-    ---------------------------------------------------------------------------
-	p_spying_trigger_timer_value: process
-	begin
-		init_signal_spy("/tde_tb/DUT/w_trigger_timer_value","/spy_trigger_timer_value", 1);
-		wait;
-	end process p_spying_trigger_timer_value;
-	
-	-- purpose: Saving out the trigger internal timer value
-    -- type   : 
-    -- inputs : 
-    -- outputs: 
-    p_saving_spy_trigger_timer_value: process (i_tr_tick) is --spy_trigger_timer_value) is
-        variable v_OLINE        : line;
-        variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
-        variable sim_time_len_v : natural;
-        variable signal_value   : integer := 0;
-    begin  -- process p_saving_spy_facilitation_timer_value
-		if tb_end_of_simulation = '1' then
-            file_close(f_trigg_timer_val);
-		else
-			sim_time_len_v := time'image(now)'length;
-			sim_time_str_v := (others => ' ');
-			sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-			signal_value := to_integer(unsigned(spy_trigger_timer_value));
+		end process p_saving_spy_facilitation_timer_value_weighted;
+		
+		---------------------------------------------------------------------------
+		-- Trigger timer value
+		---------------------------------------------------------------------------
+		p_spying_trigger_timer_value: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_trigger_timer_value","/spy_trigger_timer_value", 1);
+			wait;
+		end process p_spying_trigger_timer_value;
+		
+		-- purpose: Saving out the trigger internal timer value
+		-- type   : 
+		-- inputs : 
+		-- outputs: 
+		p_saving_spy_trigger_timer_value: process (i_tr_tick) is --spy_trigger_timer_value) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable signal_value   : integer := 0;
+		begin  -- process p_saving_spy_facilitation_timer_value
+			if tb_end_of_simulation = '1' then
+				file_close(f_trigg_timer_val);
+			else
+				sim_time_len_v := time'image(now)'length;
+				sim_time_str_v := (others => ' ');
+				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+				signal_value := to_integer(unsigned(spy_trigger_timer_value));
 
-			write(v_OLINE, signal_value);
-			write(v_OLINE, ';', right, 1);
-			write(v_OLINE, sim_time_str_v, right, 1);
-			writeline(f_trigg_timer_val, v_OLINE);
-		end if;
+				write(v_OLINE, signal_value);
+				write(v_OLINE, ';', right, 1);
+				write(v_OLINE, sim_time_str_v, right, 1);
+				writeline(f_trigg_timer_val, v_OLINE);
+			end if;
 
-    end process p_saving_spy_trigger_timer_value;
-	
-	---------------------------------------------------------------------------
-    -- Trigger timer value weighted
-    ---------------------------------------------------------------------------
-	p_spying_trigger_timer_value_weighted: process
-	begin
-		init_signal_spy("/tde_tb/DUT/w_trigger_timer_value_shifted","/spy_trigger_timer_value_weighted", 1);
-		wait;
-	end process p_spying_trigger_timer_value_weighted;
-	
-	-- purpose: Saving out the trigger internal timer value
-    -- type   : 
-    -- inputs : 
-    -- outputs: 
-    p_saving_spy_trigger_timer_value_weighted: process (i_tr_tick) is --spy_trigger_timer_value_weighted) is
-        variable v_OLINE        : line;
-        variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
-        variable sim_time_len_v : natural;
-        variable signal_value   : integer := 0;
-    begin  -- process p_saving_spy_trigger_timer_value_weighted
-		if tb_end_of_simulation = '1' then
-            file_close(f_trigg_timer_val_weighted);
-		else
-			sim_time_len_v := time'image(now)'length;
-			sim_time_str_v := (others => ' ');
-			sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-			signal_value := to_integer(unsigned(spy_trigger_timer_value_weighted));
+		end process p_saving_spy_trigger_timer_value;
+		
+		---------------------------------------------------------------------------
+		-- Trigger timer value weighted
+		---------------------------------------------------------------------------
+		p_spying_trigger_timer_value_weighted: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_trigger_timer_value_shifted","/spy_trigger_timer_value_weighted", 1);
+			wait;
+		end process p_spying_trigger_timer_value_weighted;
+		
+		-- purpose: Saving out the trigger internal timer value
+		-- type   : 
+		-- inputs : 
+		-- outputs: 
+		p_saving_spy_trigger_timer_value_weighted: process (i_tr_tick) is --spy_trigger_timer_value_weighted) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable signal_value   : integer := 0;
+		begin  -- process p_saving_spy_trigger_timer_value_weighted
+			if tb_end_of_simulation = '1' then
+				file_close(f_trigg_timer_val_weighted);
+			else
+				sim_time_len_v := time'image(now)'length;
+				sim_time_str_v := (others => ' ');
+				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+				signal_value := to_integer(unsigned(spy_trigger_timer_value_weighted));
 
-			write(v_OLINE, signal_value);
-			write(v_OLINE, ';', right, 1);
-			write(v_OLINE, sim_time_str_v, right, 1);
-			writeline(f_trigg_timer_val_weighted, v_OLINE);
-		end if;
+				write(v_OLINE, signal_value);
+				write(v_OLINE, ';', right, 1);
+				write(v_OLINE, sim_time_str_v, right, 1);
+				writeline(f_trigg_timer_val_weighted, v_OLINE);
+			end if;
 
-    end process p_saving_spy_trigger_timer_value_weighted;
-	
-	---------------------------------------------------------------------------
-    -- Spike generator clock divider value
-    ---------------------------------------------------------------------------
-	p_spying_sgen_clkdiv_value: process
-	begin
-		init_signal_spy("/tde_tb/DUT/w_clkdiv_value","/spy_spikegen_clk_div", 1);
-		wait;
-	end process p_spying_sgen_clkdiv_value;
-	
-	-- purpose: Saving out the trigger internal timer value
-    -- type   : 
-    -- inputs : 
-    -- outputs: 
-    p_saving_spy_sgen_clkdiv_value: process (i_tr_tick) is --spy_spikegen_clk_div) is
-        variable v_OLINE        : line;
-        variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
-        variable sim_time_len_v : natural;
-        variable signal_value   : integer := 0;
-    begin  -- process p_saving_spy_sgen_clkdiv_value
-		if tb_end_of_simulation = '1' then
-            file_close(f_sgen_clkdiv_val);
-		else
-			sim_time_len_v := time'image(now)'length;
-			sim_time_str_v := (others => ' ');
-			sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-			signal_value := to_integer(unsigned(spy_spikegen_clk_div));
+		end process p_saving_spy_trigger_timer_value_weighted;
+		
+		---------------------------------------------------------------------------
+		-- Spike generator clock divider value
+		---------------------------------------------------------------------------
+		p_spying_sgen_clkdiv_value: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_clkdiv_value","/spy_spikegen_clk_div", 1);
+			wait;
+		end process p_spying_sgen_clkdiv_value;
+		
+		-- purpose: Saving out the trigger internal timer value
+		-- type   : 
+		-- inputs : 
+		-- outputs: 
+		p_saving_spy_sgen_clkdiv_value: process (i_tr_tick) is --spy_spikegen_clk_div) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable signal_value   : integer := 0;
+		begin  -- process p_saving_spy_sgen_clkdiv_value
+			if tb_end_of_simulation = '1' then
+				file_close(f_sgen_clkdiv_val);
+			else
+				sim_time_len_v := time'image(now)'length;
+				sim_time_str_v := (others => ' ');
+				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+				signal_value := to_integer(unsigned(spy_spikegen_clk_div));
 
-			write(v_OLINE, signal_value);
-			write(v_OLINE, ';', right, 1);
-			write(v_OLINE, sim_time_str_v, right, 1);
-			writeline(f_sgen_clkdiv_val, v_OLINE);
-		end if;
+				write(v_OLINE, signal_value);
+				write(v_OLINE, ';', right, 1);
+				write(v_OLINE, sim_time_str_v, right, 1);
+				writeline(f_sgen_clkdiv_val, v_OLINE);
+			end if;
 
-    end process p_saving_spy_sgen_clkdiv_value;
+		end process p_saving_spy_sgen_clkdiv_value;
 	
+	end generate g_modelSim_gen;
 	--**************************************************************************
 	---------------------------------------------------------------------------*
     -- ONLY IN MODELSIM                                                        *
