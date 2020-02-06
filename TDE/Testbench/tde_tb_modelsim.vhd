@@ -6,7 +6,7 @@
 -- Author     :   <dgutierrez@DESKTOP-16SBGVD>
 -- Company    : 
 -- Created    : 2020-01-22
--- Last update: 2020-01-23
+-- Last update: 2020-02-06
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -99,31 +99,44 @@ architecture Behavioral of tde_tb is
 
     -- Saving results in a file
     signal tb_end_of_simulation : std_logic := '0'; -- Flag to indicate the end of the simulation
-	file f_faci_spike : text open write_mode is c_absolute_path & "input_faci_spikes.txt";  -- Input facilitatory spikes
-	file f_trig_spike : text open write_mode is c_absolute_path & "input_trig_spikes.txt";  -- Input trigger spikes
+    
+    file f_faci_spike : text open write_mode is c_absolute_path & "input_faci_spikes.txt";  -- Input facilitatory spikes
+    file f_trig_spike : text open write_mode is c_absolute_path & "input_trig_spikes.txt";  -- Input trigger spikes
     file f_out_spikes : text open write_mode is c_absolute_path & "output_spikes.txt";  -- Output spikes from the TDE model
 	
-	---------------------------------------------------------------------------
+	-- Saving results of the delta_t variation test in a file
+	file f_out_spikes_delta_t : text open write_mode is c_absolute_path & "output_spikes_delta_t.txt";  -- Output spikes from the TDE model
+	
+	-- Test to run
+	constant c_basic_behavioral_test : boolean := false; -- If true, TDE behavioral test with basic cases will be launched
+	constant c_delta_t_variation_test : boolean := true; --If true, TDE behavioral test with delta_t variation will be launched
+	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
+	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
+	signal tb_delta_t_value : time := 0 us;
+	
+    ---------------------------------------------------------------------------
     -- ONLY IN MODELSIM
     ---------------------------------------------------------------------------
-	-- Testbench signals for "spy signal"
-	signal spy_facilitatory_timer_value : std_logic_vector((g_NBITS - 1) downto 0); -- Value of the facilitatory internal timer
-	signal spy_facilitatory_timer_value_weighted : std_logic_vector((g_NBITS - 1) downto 0); -- Value of the facilitatory internal timer after be weighted
-	
-	signal spy_trigger_timer_value : std_logic_vector((g_NBITS - 1) downto 0); -- Value of the trigger internal timer
-	signal spy_trigger_timer_value_weighted : std_logic_vector((g_NBITS - 1) downto 0); -- Value of the trigger internal timer after be weighted
-	
-	signal spy_spikegen_clk_div : std_logic_vector((g_NBITS - 1) downto 0); -- Result of the subtraction
-	
-	-- Files for saving the results
-	file f_faci_timer_val : text open write_mode is c_absolute_path & "faci_timer.txt";  -- Values of the internal faci_timer
-	file f_faci_timer_val_weighted : text open write_mode is c_absolute_path & "faci_timer_weighted.txt";  -- Values of the internal faci_timer
-	
-	file f_trigg_timer_val : text open write_mode is c_absolute_path & "trigg_timer.txt";  -- Values of the internal faci_timer
-	file f_trigg_timer_val_weighted : text open write_mode is c_absolute_path & "trigg_timer_weighted.txt";  -- Values of the internal faci_timer
-	
-	file f_sgen_clkdiv_val : text open write_mode is c_absolute_path & "sgen_clkdiv.txt";  -- Values of the internal faci_timer
-	---------------------------------------------------------------------------
+    -- Testbench signals for "spy signal"
+    signal spy_facilitatory_timer_value          : std_logic_vector((g_NBITS - 1) downto 0);  -- Value of the facilitatory internal timer
+    signal spy_facilitatory_timer_value_weighted : std_logic_vector((g_NBITS - 1) downto 0);  -- Value of the facilitatory internal timer after be weighted
+
+    signal spy_trigger_timer_value          : std_logic_vector((g_NBITS - 1) downto 0);  -- Value of the trigger internal timer
+    signal spy_trigger_timer_value_weighted : std_logic_vector((g_NBITS - 1) downto 0);  -- Value of the trigger internal timer after be weighted
+
+    signal spy_spikegen_val2gen : std_logic_vector((g_NBITS - 1) downto 0);  --Value to convert to spikes
+    signal spy_spikegen_clk_div : std_logic_vector((g_NBITS - 1) downto 0);  -- Result of the subtraction
+
+    -- Files for saving the results
+    file f_faci_timer_val          : text open write_mode is c_absolute_path & "faci_timer.txt";  -- Values of the internal faci_timer
+    file f_faci_timer_val_weighted : text open write_mode is c_absolute_path & "faci_timer_weighted.txt";  -- Values of the internal faci_timer
+
+    file f_trigg_timer_val          : text open write_mode is c_absolute_path & "trigg_timer.txt";  -- Values of the internal faci_timer
+    file f_trigg_timer_val_weighted : text open write_mode is c_absolute_path & "trigg_timer_weighted.txt";  -- Values of the internal faci_timer
+
+    file f_sgen_val2gen    : text open write_mode is c_absolute_path & "sgen_val.txt"; -- Spikes to generate
+    file f_sgen_clkdiv_val : text open write_mode is c_absolute_path & "sgen_clkdiv.txt";  -- Values of the internal faci_timer
+    ---------------------------------------------------------------------------
     -- ONLY IN MODELSIM
     ---------------------------------------------------------------------------
 	
@@ -150,295 +163,389 @@ begin  -- architecture Behavioral
     -- clock generation
     i_clock <= not i_clock after c_i_clock_period/2;
 
-    -- waveform generation
-    WaveGen_Proc: process
-    begin
-        -- insert signal assignments here
+	g_delta_t_test : if c_delta_t_variation_test = true generate
+		-- purpose: process for generating the response of the TDE over different delta_t values
+		-- type   :
+		-- inputs : 
+		-- outputs: 
+		p_num_spikes_over_delta_t: process is
+			variable v_delta_t : time := 0 us;  -- time difference between the facilitatory and the trigger spikes
+		begin  -- process p_num_spikes_over_delta_t
+			--
+			-- First reset
+			--
+			
+			-- Set reset to 0
+			i_nreset <= '0';
+			-- Hold reset to 0 for 1 us;
+			wait for 1 us;
+			-- Clear reset
+			i_nreset <= '1';
+			-- Wait for few microseconds
+			wait for 1 us;
 
-        --
-        -- First reset
-        --
-        
-        -- Set reset to 0
-        i_nreset <= '0';
-        -- Hold reset to 0 for 1 us;
-        wait for 1 us;
-        -- Clear reset
-        i_nreset <= '1';
-        -- Wait for few microseconds
-        wait for 1 us;
+			--
+			-- TDE configuration
+			--
 
-        --
-        -- TDE configuration
-        --
+			-- Set all the parameters (w = 4; d = 2; detec =  )
+			i_weight <= x"4";
+			i_decay  <= x"2";
+			i_detection_time <= x"02BC";
 
-        -- Set all the parameters
-        i_weight <= x"4";
-        i_decay  <= x"2";
-        i_detection_time <= x"02BC";
+			-- Wait for 1 us;
 
-        -- Wait
-        wait for 1 us;
+			--
+			-- Idle
+			--
+			-- Let the system in IDLE for 10 us
+			wait for 10 us;
 
-        --
-        -- Idle
-        --
-        
-        -- Let the system in IDLE for 10 us
-        wait for 10 us;
+			--
+			-- Sync
+			--
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
 
-        --
-        -- Cases
-        --
+			--
+			-- Loop
+			--
+			while v_delta_t <= 750 us loop
+				-- Activate flag "new_delta_t_value"
+				wait for c_i_clock_period;
+				tb_delta_t_value <= v_delta_t;
+				tb_new_delta_t_value <= '1';
+				wait for c_i_clock_period;
+				tb_new_delta_t_value <= '0';
+				wait for c_i_clock_period;
+				
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-        ---------
-        -- Case 0: 1 facilitation pulse 
-        ---------
+				-- Wait for delta_t
+				wait for v_delta_t;
 
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
---        -- Inconming pulse
---        i_facilitatory <= '1';
---        wait for c_i_clock_period;
---        i_facilitatory <= '0';
-        
---        -- Wait for 710 us
---        wait for 710 us;
-        
---        -- Check the output
---        report "End of CASE 0." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
---        ---------
---        -- Case 1: 1 trigger pulse 
---        ---------
-        
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+				-- Update the delta_t value
+				v_delta_t := v_delta_t + 50 us;
+				
+				wait for c_i_clock_period;
+				tb_end_delta_t_value <= '1';
+				wait for c_i_clock_period;
+				tb_end_delta_t_value <= '0';
+				wait for c_i_clock_period;
+				
+			end loop;
+			
+			-- Finishing the simulation
+			-- Check the output
+			report "End of the delta_t simulation" severity note;
+			tb_end_of_simulation <= '1';
+			
+		end process p_num_spikes_over_delta_t;
+	end generate g_delta_t_test;
 
---        -- Inconming pulse
---        i_trigger <= '1';
---        wait for c_i_clock_period;
---        i_trigger <= '0';
-        
---        -- Wait for 710 us
---        wait for 10 us;
-        
---        -- Check the output
---        report "End of CASE 1." severity note;
+	g_basic_cases_test: if c_basic_behavioral_test = true generate
+		-- purpose: process for generating the response of the TDE for the basic cases
+		-- type   :
+		-- inputs : 
+		-- outputs: 
+		p_basic_cases_test: process
+		begin
+			--
+			-- First reset
+			--
+			
+			-- Set reset to 0
+			i_nreset <= '0';
+			-- Hold reset to 0 for 1 us;
+			wait for 1 us;
+			-- Clear reset
+			i_nreset <= '1';
+			-- Wait for few microseconds
+			wait for 1 us;
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
---        ---------
---        -- Case 2: 1 trigger pulse, then 1 facilitatory pulse 
---        ---------
-        
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+			--
+			-- TDE configuration
+			--
 
---        -- Trigger pulse
---        i_trigger <= '1';
---        wait for c_i_clock_period;
---        i_trigger <= '0';
-        
---        -- Wait 1 clock cycle
---        wait for c_i_clock_period;
-        
---        -- Facilitatory pulse
---        i_facilitatory <= '1';
---        wait for c_i_clock_period;
---        i_facilitatory <= '0';
-        
---        -- Wait for 710 us
---        wait for 710 us;
-        
---        -- Check the output
---        report "End of CASE 2." severity note;
+			-- Set all the parameters
+			i_weight <= x"4";
+			i_decay  <= x"2";
+			i_detection_time <= x"02BC";
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
---        ---------
---        -- Case 3: 1 facilitatory pulse, then 1 trigger pulse after 710 us
---        --         (out of the detection time)
---        ---------
-        
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+			-- Wait
+			wait for 1 us;
 
---        -- Facilitatory pulse
---        i_facilitatory <= '1';
---        wait for c_i_clock_period;
---        i_facilitatory <= '0';
-        
---        -- Wait 1 clock cycle
---        wait for 710 us;
-        
---        -- Trigger pulse
---        i_trigger <= '1';
---        wait for c_i_clock_period;
---        i_trigger <= '0';
-        
---        -- Wait for 710 us
---        wait for 710 us;
-        
---        -- Check the output
---        report "End of CASE 3." severity note;
+			--
+			-- Idle
+			--
+			
+			-- Let the system in IDLE for 10 us
+			wait for 10 us;
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
-        ---------
-        -- Case 4: 1 facilitatory pulse, then 1 trigger pulse after 10 us (low delay)
-        ---------
-        
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+			--
+			-- Cases
+			--
 
---        -- Facilitatory pulse
---        i_facilitatory <= '1';
---        wait for c_i_clock_period;
---        i_facilitatory <= '0';
-        
---        -- Wait 1 clock cycle
---        wait for 10 us;
-        
---        -- Trigger pulse
---        i_trigger <= '1';
---        wait for c_i_clock_period;
---        i_trigger <= '0';
-        
---        -- Wait for 710 us
---        wait for 710 us;
-        
---        -- Check the output
---        report "End of CASE 4." severity note;
+			---------
+			-- Case 0: 1 facilitation pulse 
+			---------
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
-        ---------
-        -- Case 5: 1 facilitatory pulse, then 1 trigger pulse after 600 us (big delay)
-        ---------
-        
---        -- Sync
---        wait until i_clock'event and  i_clock = '1';
---        wait for c_i_clock_period;
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
 
---        -- Facilitatory pulse
---        i_facilitatory <= '1';
---        wait for c_i_clock_period;
---        i_facilitatory <= '0';
-        
---        -- Wait 1 clock cycle
---        wait for 600 us;
-        
---        -- Trigger pulse
---        i_trigger <= '1';
---        wait for c_i_clock_period;
---        i_trigger <= '0';
-        
---        -- Wait for 710 us
---        wait for 710 us;
-        
---        -- Check the output
---        report "End of CASE 5." severity note;
+			-- Inconming pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
 
---        -- Wait for a few of microseconds
---        wait for 5 us;
-        
-        ---------
-        -- Case 6: 1 facilitatory pulse, then 1 trigger pulse after 100 us,
-        --         and 1 trigger pulse after (100) + 300 us
-        ---------
-        
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+			-- Wait for 710 us
+			wait for 710 us;
 
-        -- Facilitatory pulse
-        i_facilitatory <= '1';
-        wait for c_i_clock_period;
-        i_facilitatory <= '0';
-        
-        -- Wait 1 clock cycle
-        wait for 100 us;
-        
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
-        
-        -- Wait for 300 us
-        wait for 10 us;
-        
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
-        
-        -- Wait
-        wait for 700 us;
-        
-        -- Check the output
-        report "End of CASE 6." severity note;
+			-- Check the output
+			report "End of CASE 0." severity note;
 
-        -- Wait for a few of microseconds
-        wait for 5 us;
-		
-		-- ---------
-        -- -- Case 7: 1 facilitatory pulse, then 1 facilitatory pulse after 100 us,
-        -- --         and 1 trigger pulse after (100) + 300 us
-        -- ---------
-        
-        -- -- Sync
-        -- wait until i_clock'event and  i_clock = '1';
-        -- wait for c_i_clock_period;
+			-- Wait for a few of microseconds
+			wait for 5 us;
 
-        -- -- Facilitatory pulse
-        -- i_facilitatory <= '1';
-        -- wait for c_i_clock_period;
-        -- i_facilitatory <= '0';
-        
-        -- -- Wait 1 clock cycle
-        -- wait for 100 us;
-        
-        -- -- Facilitatory pulse
-        -- i_facilitatory <= '1';
-        -- wait for c_i_clock_period;
-        -- i_facilitatory <= '0';
-        
-        -- -- Wait for 300 us
-        -- wait for 300 us;
-        
-        -- -- Trigger pulse
-        -- i_trigger <= '1';
-        -- wait for c_i_clock_period;
-        -- i_trigger <= '0';
-        
-        -- -- Wait
-        -- wait for 700 us;
-        
-        -- -- Check the output
-        -- report "End of CASE 7." severity note;
+			---------
+			-- Case 1: 1 trigger pulse 
+			---------
 
-        -- -- Wait for a few of microseconds
-        -- wait for 5 us;
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
 
-        -- Finishing the simulation
-        tb_end_of_simulation <= '1';
-        
-        wait;
-    end process WaveGen_Proc;
+			-- Inconming pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait for 710 us
+			wait for 10 us;
+
+			-- Check the output
+			report "End of CASE 1." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			---------
+			-- Case 2: 1 trigger pulse, then 1 facilitatory pulse 
+			---------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait 1 clock cycle
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait for 710 us
+			wait for 710 us;
+
+			-- Check the output
+			report "End of CASE 2." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			---------
+			-- Case 3: 1 facilitatory pulse, then 1 trigger pulse after 710 us
+			--         (out of the detection time)
+			---------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait 1 clock cycle
+			wait for 710 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait for 710 us
+			wait for 710 us;
+
+			-- Check the output
+			report "End of CASE 3." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			-------
+			-- Case 4: 1 facilitatory pulse, then 1 trigger pulse after 10 us (low delay)
+			-------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait 1 clock cycle
+			wait for 10 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait for 710 us
+			wait for 710 us;
+
+			-- Check the output
+			report "End of CASE 4." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			-------
+			-- Case 5: 1 facilitatory pulse, then 1 trigger pulse after 600 us (big delay)
+			-------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait 1 clock cycle
+			wait for 600 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait for 710 us
+			wait for 710 us;
+
+			-- Check the output
+			report "End of CASE 5." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			---------
+			-- Case 6: 1 facilitatory pulse, then 1 trigger pulse after 100 us,
+			--         and 1 trigger pulse after (100) + 300 us
+			---------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait 1 clock cycle
+			wait for 100 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait for 300 us
+			wait for 10 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait
+			wait for 700 us;
+
+			-- Check the output
+			report "End of CASE 6." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			---------
+			-- Case 7: 1 facilitatory pulse, then 1 facilitatory pulse after 100 us,
+			--         and 1 trigger pulse after (100) + 300 us
+			---------
+
+			-- Sync
+			wait until i_clock'event and  i_clock = '1';
+			wait for c_i_clock_period;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait 1 clock cycle
+			wait for 100 us;
+
+			-- Facilitatory pulse
+			i_facilitatory <= '1';
+			wait for c_i_clock_period;
+			i_facilitatory <= '0';
+
+			-- Wait for 300 us
+			wait for 300 us;
+
+			-- Trigger pulse
+			i_trigger <= '1';
+			wait for c_i_clock_period;
+			i_trigger <= '0';
+
+			-- Wait
+			wait for 700 us;
+
+			-- Check the output
+			report "End of CASE 7." severity note;
+
+			-- Wait for a few of microseconds
+			wait for 5 us;
+
+			-- Finishing the simulation
+			tb_end_of_simulation <= '1';
+			
+			wait;
+		end process p_basic_cases_test;
+	end generate g_basic_cases_test;
 
     -- purpose: i_tr_tick clock generation
     -- type   : sequential
@@ -566,6 +673,63 @@ begin  -- architecture Behavioral
         end if;
     end process p_saving_output_spikes;
 	
+	g_save_outspikes_file_delta_t: if c_delta_t_variation_test = true generate
+		-- purpose: Saving out the output spikes
+		-- type   : sequential
+		-- inputs : i_clock, i_nreset, o_output_spike
+		-- outputs: 
+		p_saving_output_spikes_delta_t: process (i_clock, i_nreset) is
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);  -- 30 chars should be enough
+			variable sim_time_len_v : natural;
+			variable events_counter : integer := 0;
+		begin  -- process p_saving_output_results
+			if i_nreset = '0' then          -- asynchronous reset (active low)
+				
+			elsif tb_end_of_simulation = '1' then
+				file_close(f_out_spikes_delta_t);
+			elsif i_clock'event and i_clock = '1' then  -- rising clock edge
+				if tb_new_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-1"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_delta_t, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if tb_end_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-2"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_delta_t, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if o_output_spike = '1' then
+					sim_time_len_v := time'image(now)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+					events_counter := events_counter + 1;
+
+					write(v_OLINE, events_counter);
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_delta_t, v_OLINE);
+
+				end if;
+				
+			end if;
+		end process p_saving_output_spikes_delta_t;
+	end generate g_save_outspikes_file_delta_t;
+	
 	--**************************************************************************
 	---------------------------------------------------------------------------*
     -- ONLY IN MODELSIM                                                        *
@@ -593,16 +757,18 @@ begin  -- architecture Behavioral
 		begin  -- process p_saving_spy_facilitation_timer_value
 			if tb_end_of_simulation = '1' then
 				file_close(f_faci_timer_val);
-			else
-				sim_time_len_v := time'image(now)'length;
-				sim_time_str_v := (others => ' ');
-				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-				signal_value := to_integer(unsigned(spy_facilitatory_timer_value));
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_facilitatory_timer_value));
 
-				write(v_OLINE, signal_value);
-				write(v_OLINE, ';', right, 1);
-				write(v_OLINE, sim_time_str_v, right, 1);
-				writeline(f_faci_timer_val, v_OLINE);
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_faci_timer_val, v_OLINE);
+                end if;
 			end if;
 
 		end process p_saving_spy_facilitation_timer_value;
@@ -628,16 +794,18 @@ begin  -- architecture Behavioral
 		begin  -- process p_saving_spy_facilitation_timer_value
 			if tb_end_of_simulation = '1' then
 				file_close(f_faci_timer_val_weighted);
-			else
-				sim_time_len_v := time'image(now)'length;
-				sim_time_str_v := (others => ' ');
-				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-				signal_value := to_integer(unsigned(spy_facilitatory_timer_value_weighted));
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_facilitatory_timer_value_weighted));
 
-				write(v_OLINE, signal_value);
-				write(v_OLINE, ';', right, 1);
-				write(v_OLINE, sim_time_str_v, right, 1);
-				writeline(f_faci_timer_val_weighted, v_OLINE);
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_faci_timer_val_weighted, v_OLINE);
+                end if;
 			end if;
 
 		end process p_saving_spy_facilitation_timer_value_weighted;
@@ -663,16 +831,18 @@ begin  -- architecture Behavioral
 		begin  -- process p_saving_spy_facilitation_timer_value
 			if tb_end_of_simulation = '1' then
 				file_close(f_trigg_timer_val);
-			else
-				sim_time_len_v := time'image(now)'length;
-				sim_time_str_v := (others => ' ');
-				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-				signal_value := to_integer(unsigned(spy_trigger_timer_value));
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_trigger_timer_value));
 
-				write(v_OLINE, signal_value);
-				write(v_OLINE, ';', right, 1);
-				write(v_OLINE, sim_time_str_v, right, 1);
-				writeline(f_trigg_timer_val, v_OLINE);
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_trigg_timer_val, v_OLINE);
+                end if;
 			end if;
 
 		end process p_saving_spy_trigger_timer_value;
@@ -698,20 +868,60 @@ begin  -- architecture Behavioral
 		begin  -- process p_saving_spy_trigger_timer_value_weighted
 			if tb_end_of_simulation = '1' then
 				file_close(f_trigg_timer_val_weighted);
-			else
-				sim_time_len_v := time'image(now)'length;
-				sim_time_str_v := (others => ' ');
-				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-				signal_value := to_integer(unsigned(spy_trigger_timer_value_weighted));
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_trigger_timer_value_weighted));
 
-				write(v_OLINE, signal_value);
-				write(v_OLINE, ';', right, 1);
-				write(v_OLINE, sim_time_str_v, right, 1);
-				writeline(f_trigg_timer_val_weighted, v_OLINE);
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_trigg_timer_val_weighted, v_OLINE);
+                end if;
 			end if;
 
 		end process p_saving_spy_trigger_timer_value_weighted;
-		
+
+        ---------------------------------------------------------------------------
+        -- Spike generator value to generate
+        ---------------------------------------------------------------------------
+		p_spying_sgen_val_to_generate: process
+		begin
+			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			wait;
+		end process p_spying_sgen_val_to_generate;
+
+        -- purpose: Saving out the value to be converted to spikes
+        -- type   : 
+        -- inputs : i_tr_tick
+        -- outputs: 
+        p_saving_spy_sgen_val_to_generate: process (i_tr_tick) is
+            variable v_OLINE : line;
+            variable sim_time_str_v : string(1 to 30);
+            variable sim_time_len_v : natural;
+            variable signal_value : integer := 0;
+        begin  -- process p_saving_spy_sgen_val_to_generate
+            if tb_end_of_simulation = '1' then
+                file_close(f_sgen_val2gen);
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_spikegen_val2gen));
+
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_sgen_val2gen, v_OLINE);
+                end if;
+
+            end if;
+
+        end process p_saving_spy_sgen_val_to_generate;
+                
 		---------------------------------------------------------------------------
 		-- Spike generator clock divider value
 		---------------------------------------------------------------------------
@@ -733,16 +943,18 @@ begin  -- architecture Behavioral
 		begin  -- process p_saving_spy_sgen_clkdiv_value
 			if tb_end_of_simulation = '1' then
 				file_close(f_sgen_clkdiv_val);
-			else
-				sim_time_len_v := time'image(now)'length;
-				sim_time_str_v := (others => ' ');
-				sim_time_str_v(1 to sim_time_len_v) := time'image(now);
-				signal_value := to_integer(unsigned(spy_spikegen_clk_div));
+            else
+                if i_tr_tick = '1' then
+                    sim_time_len_v := time'image(now)'length;
+                    sim_time_str_v := (others => ' ');
+                    sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+                    signal_value := to_integer(unsigned(spy_spikegen_clk_div));
 
-				write(v_OLINE, signal_value);
-				write(v_OLINE, ';', right, 1);
-				write(v_OLINE, sim_time_str_v, right, 1);
-				writeline(f_sgen_clkdiv_val, v_OLINE);
+                    write(v_OLINE, signal_value);
+                    write(v_OLINE, ';', right, 1);
+                    write(v_OLINE, sim_time_str_v, right, 1);
+                    writeline(f_sgen_clkdiv_val, v_OLINE);
+                end if;
 			end if;
 
 		end process p_saving_spy_sgen_clkdiv_value;
