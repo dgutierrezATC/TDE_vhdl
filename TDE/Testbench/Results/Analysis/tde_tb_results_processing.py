@@ -48,6 +48,7 @@ spikes_gen_val2gen_filename = source_files_absolute_path + "sgen_val.txt"
 spikes_gen_clkdiv_filename = source_files_absolute_path + "sgen_clkdiv.txt"
 
 tde_output_spikes_filename = source_files_absolute_path + "output_spikes.txt"
+tde_output_spikes_delta_t_filename = source_files_absolute_path + "output_spikes_delta_t.txt"
 
 #
 # Main arrays!
@@ -75,6 +76,7 @@ original_file_names.append(spikes_gen_val2gen_filename) # 6
 original_file_names.append(spikes_gen_clkdiv_filename) # 7
 
 original_file_names.append(tde_output_spikes_filename) # 8
+original_file_names.append(tde_output_spikes_delta_t_filename) # 9
 
 #
 # Enum declaration for establishing the positions
@@ -89,6 +91,7 @@ class TDE_results_datafiles_order(enum.Enum):
     sgen_val = 6
     sgen_clkdiv = 7
     output_spikes = 8
+    output_spikes_delta_t = 9
 
 #
 # Files reading to be preprocessed
@@ -196,7 +199,7 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     
     # Plotting the facilitatory and trigger spikes
     ax1 = fig.add_subplot(511)
-    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'ro', input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'bo')
+    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|')
     plt.setp(ax1.get_xticklabels(), visible=False)
     # Plotting the facilitatory timer value
     ax2 = fig.add_subplot(512, sharex=ax1)
@@ -321,3 +324,34 @@ def  plotNumOutputSpikesPerMicrosecond(output_spikes_timestamps):
     fig.savefig('tde_num_spikes_per_us.png')
 
 plotNumOutputSpikesPerMicrosecond(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
+
+def plotNumOutputSpikesPerDeltaT(output_spikes_timestamps, output_spikes_values):
+    delta_t_values = []
+    num_spikes_per_delta_t = []
+
+    num_elemns = len(output_spikes_values)
+    max_val = 0
+
+    for val_index in range(num_elemns):
+        val = output_spikes_values[val_index]
+
+        if val == -1:
+            delta_t_values.append(output_spikes_timestamps[val_index])
+            max_val = 0
+        elif val == -2:
+            num_spikes_per_delta_t.append(max_val)
+        else:
+            if val > max_val:
+                max_val = val
+        
+    fig, ax = plt.subplots()
+
+    ax.plot(delta_t_values, num_spikes_per_delta_t, 'b*-')
+    ax.set(xlabel=r'Time ($\mu$s)', ylabel='No. spikes', title=r'Number of spikes over $\Delta$t')
+    ax.grid()
+
+    plt.show()
+
+    fig.savefig('tde_num_spikes_over_delta_t.png')
+
+plotNumOutputSpikesPerDeltaT(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t.value)])
