@@ -24,6 +24,7 @@
 -------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 use ieee.std_logic_textio.all;
 use STD.textio.all;
@@ -106,10 +107,13 @@ architecture Behavioral of tde_tb is
 	
 	-- Saving results of the delta_t variation test in a file
 	file f_out_spikes_delta_t : text open write_mode is c_absolute_path & "output_spikes_delta_t.txt";  -- Output spikes from the TDE model
+	file f_out_spikes_global_delta_t : text;
 	
 	-- Test to run
 	constant c_basic_behavioral_test : boolean := false; -- If true, TDE behavioral test with basic cases will be launched
-	constant c_delta_t_variation_test : boolean := true; --If true, TDE behavioral test with delta_t variation will be launched
+	constant c_delta_t_variation_test : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
+	constant c_global_delta_t_variation_test : boolean := true; -- If true, TDE behavioral test with delta_t variation and multiple TDE configuration will be launched
+	
 	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
 	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
 	signal tb_delta_t_value : time := 0 us;
@@ -162,6 +166,123 @@ begin  -- architecture Behavioral
 
     -- clock generation
     i_clock <= not i_clock after c_i_clock_period/2;
+	
+	
+	g_global_delta_t_test: if c_global_delta_t_variation_test = true generate
+		-- purpose: process for generating the response of multiple TDE configs over different delta_t values
+		-- type   :
+		-- inputs : 
+		-- outputs: 
+		p_num_spikes_over_global_delta_t: process is
+			variable v_delta_t : time := 0 us;  -- time difference between the facilitatory and the trigger spikes
+			variable v_detection_time : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
+			--variable v_filename : string(1 to 50); 
+		begin  -- process p_num_spikes_over_delta_t
+			
+			while(v_detection_time <= x"2BC") loop
+				--
+				--First, open a new file
+				--
+				--file_open(f_out_spikes_global_delta_t, , write_mode);
+				
+				--
+				-- First reset
+				--
+				
+				-- Set reset to 0
+				i_nreset <= '0';
+				-- Hold reset to 0 for 1 us;
+				wait for 1 us;
+				-- Clear reset
+				i_nreset <= '1';
+				-- Wait for few microseconds
+				wait for 1 us;
+
+				--
+				-- TDE configuration
+				--
+
+				-- Set all the parameters (w = 4; d = 2; detec = 700)
+				i_weight <= x"4";
+				i_decay  <= x"2";
+				i_detection_time <= v_detection_time;
+
+				-- Wait for 1 us;
+
+				--
+				-- Idle
+				--
+				-- Let the system in IDLE for 10 us
+				wait for 10 us;
+
+				--
+				-- Sync
+				--
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
+
+				--
+				-- Loop
+				--
+				while v_delta_t <= 750 us loop
+					-- Activate flag "new_delta_t_value"
+					wait for c_i_clock_period;
+					tb_delta_t_value <= v_delta_t;
+					tb_new_delta_t_value <= '1';
+					wait for c_i_clock_period;
+					tb_new_delta_t_value <= '0';
+					wait for c_i_clock_period;
+					
+					-- Facilitatory pulse
+					i_facilitatory <= '1';
+					wait for c_i_clock_period;
+					i_facilitatory <= '0';
+
+					-- Wait for delta_t
+					wait for v_delta_t;
+
+					-- Trigger pulse
+					i_trigger <= '1';
+					wait for c_i_clock_period;
+					i_trigger <= '0';
+
+					-- Wait for 710 us
+					wait for 710 us;
+
+					-- Update the delta_t value
+					v_delta_t := v_delta_t + 50 us;
+					
+					wait for c_i_clock_period;
+					tb_end_delta_t_value <= '1';
+					wait for c_i_clock_period;
+					tb_end_delta_t_value <= '0';
+					wait for c_i_clock_period;
+					
+				end loop;
+				
+				-- Close the file
+				--file_close(f_out_spikes_global_delta_t);
+				
+				-- Update the detection time
+				v_detection_time := v_detection_time + x"0064";
+				
+				-- Clear the delta_t variable
+				v_delta_t := 0 us;
+				
+			end loop;
+			
+			-- Check the output
+			report "End of the delta_t simulation" severity note;
+			
+			-- Finishing the simulation
+			tb_end_of_simulation <= '1';
+			
+			-- Wait forever
+			wait;
+			
+		end process p_num_spikes_over_global_delta_t;
+	
+	end generate g_global_delta_t_test;
 
 	g_delta_t_test : if c_delta_t_variation_test = true generate
 		-- purpose: process for generating the response of the TDE over different delta_t values
@@ -188,7 +309,7 @@ begin  -- architecture Behavioral
 			-- TDE configuration
 			--
 
-			-- Set all the parameters (w = 4; d = 2; detec =  )
+			-- Set all the parameters (w = 4; d = 2; detec = 700)
 			i_weight <= x"4";
 			i_decay  <= x"2";
 			i_detection_time <= x"02BC";
@@ -246,10 +367,14 @@ begin  -- architecture Behavioral
 				
 			end loop;
 			
-			-- Finishing the simulation
 			-- Check the output
 			report "End of the delta_t simulation" severity note;
+			
+			-- Finishing the simulation
 			tb_end_of_simulation <= '1';
+			
+			-- Wait forever
+			wait;
 			
 		end process p_num_spikes_over_delta_t;
 	end generate g_delta_t_test;
