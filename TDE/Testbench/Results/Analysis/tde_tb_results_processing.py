@@ -48,7 +48,16 @@ spikes_gen_val2gen_filename = source_files_absolute_path + "sgen_val.txt"
 spikes_gen_clkdiv_filename = source_files_absolute_path + "sgen_clkdiv.txt"
 
 tde_output_spikes_filename = source_files_absolute_path + "output_spikes.txt"
+
 tde_output_spikes_delta_t_filename = source_files_absolute_path + "output_spikes_delta_t.txt"
+
+tde_output_spikes_delta_t_case_0_filename = source_files_absolute_path + "output_spikes_delta_t_case_0.txt"
+tde_output_spikes_delta_t_case_1_filename = source_files_absolute_path + "output_spikes_delta_t_case_1.txt"
+tde_output_spikes_delta_t_case_2_filename = source_files_absolute_path + "output_spikes_delta_t_case_2.txt"
+tde_output_spikes_delta_t_case_3_filename = source_files_absolute_path + "output_spikes_delta_t_case_3.txt"
+tde_output_spikes_delta_t_case_4_filename = source_files_absolute_path + "output_spikes_delta_t_case_4.txt"
+tde_output_spikes_delta_t_case_5_filename = source_files_absolute_path + "output_spikes_delta_t_case_5.txt"
+tde_output_spikes_delta_t_case_6_filename = source_files_absolute_path + "output_spikes_delta_t_case_6.txt"
 
 #
 # Main arrays!
@@ -76,7 +85,17 @@ original_file_names.append(spikes_gen_val2gen_filename) # 6
 original_file_names.append(spikes_gen_clkdiv_filename) # 7
 
 original_file_names.append(tde_output_spikes_filename) # 8
+
 original_file_names.append(tde_output_spikes_delta_t_filename) # 9
+
+original_file_names.append(tde_output_spikes_delta_t_case_0_filename) # 10
+original_file_names.append(tde_output_spikes_delta_t_case_1_filename) # 11
+original_file_names.append(tde_output_spikes_delta_t_case_2_filename) # 12
+original_file_names.append(tde_output_spikes_delta_t_case_3_filename) # 13
+original_file_names.append(tde_output_spikes_delta_t_case_4_filename) # 14
+original_file_names.append(tde_output_spikes_delta_t_case_5_filename) # 15
+original_file_names.append(tde_output_spikes_delta_t_case_6_filename) # 16
+
 
 #
 # Enum declaration for establishing the positions
@@ -92,6 +111,14 @@ class TDE_results_datafiles_order(enum.Enum):
     sgen_clkdiv = 7
     output_spikes = 8
     output_spikes_delta_t = 9
+    output_spikes_delta_t_case_0 = 10
+    output_spikes_delta_t_case_1 = 11
+    output_spikes_delta_t_case_2 = 12
+    output_spikes_delta_t_case_3 = 13
+    output_spikes_delta_t_case_4 = 14
+    output_spikes_delta_t_case_5 = 15
+    output_spikes_delta_t_case_6 = 16
+
 
 #
 # Files reading to be preprocessed
@@ -231,7 +258,6 @@ plotTDEresults2(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes
                 all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])
 
-
 #
 # Plotting the output spikes over the time
 #
@@ -325,6 +351,9 @@ def  plotNumOutputSpikesPerMicrosecond(output_spikes_timestamps):
 
 plotNumOutputSpikesPerMicrosecond(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
 
+#
+# Plotting the variation of the no of spikes over delta_t values
+#
 def plotNumOutputSpikesPerDeltaT(output_spikes_timestamps, output_spikes_values):
     delta_t_values = []
     num_spikes_per_delta_t = []
@@ -355,3 +384,68 @@ def plotNumOutputSpikesPerDeltaT(output_spikes_timestamps, output_spikes_values)
     fig.savefig('tde_num_spikes_over_delta_t.png')
 
 plotNumOutputSpikesPerDeltaT(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t.value)])
+
+#
+# Plotting different TDE configurations and results from delta_t variation
+#
+def plotNumOutputSpikesPerDeltaTForMultipleTDE(files_start_index, files_end_index):
+    # We need to arrays to store the results of each configuration from each file
+    global_delta_t_values = []
+    global_num_spikes_per_delta_t = []
+
+    # For each file
+    for result_file_index in range(files_start_index, files_end_index + 1):
+        # We take the data from a specific file
+        case_output_spikes_values = all_values[result_file_index]
+        case_output_spikes_timestamps = all_timestamps[result_file_index]
+
+        # Temporal results
+        delta_t_values = []
+        num_spikes_per_delta_t = []
+
+        # We need to know the lenght of this array
+        num_elemns = len(case_output_spikes_values)
+        max_val = 0
+
+        # For each value
+        for val_index in range(num_elemns):
+            val = case_output_spikes_values[val_index]
+
+            # If the val is equal to -1, then a new case is going to start
+            if val == -1:
+                delta_t_values.append(case_output_spikes_timestamps[val_index])
+                max_val = 0
+            # If the val is equal to -2, then the current case has finished
+            elif val == -2:
+                num_spikes_per_delta_t.append(max_val)
+            # If others, then is the spike counter value. We need to obtain the maximum value
+            else:
+                if val > max_val:
+                    max_val = val
+
+        # Finally, we store the current delta_t value of this case
+        global_delta_t_values.append(delta_t_values)
+        # And its maximum number of spikes
+        global_num_spikes_per_delta_t.append(num_spikes_per_delta_t)
+
+    # Plotting the results in the same plot
+    fig, ax = plt.subplots()
+
+    ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'b*-', label=r'Detect. time: 100$\mu$s')
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'g*-', label=r'Detect. time: 200$\mu$s')
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'r*-', label=r'Detect. time: 300$\mu$s')
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'c*-', label=r'Detect. time: 400$\mu$s')
+    ax.plot(global_delta_t_values[4], global_num_spikes_per_delta_t[4], 'm*-', label=r'Detect. time: 500$\mu$s')
+    ax.plot(global_delta_t_values[5], global_num_spikes_per_delta_t[5], 'y*-', label=r'Detect. time: 600$\mu$s')
+    ax.plot(global_delta_t_values[6], global_num_spikes_per_delta_t[6], 'k*-', label=r'Detect. time: 700$\mu$s')
+
+    ax.set(xlabel=r'$\Delta$t ($\mu$s)', ylabel='No. spikes', title=r'Number of spikes over $\Delta$t')
+    ax.grid()
+
+    plt.legend()
+
+    plt.show()
+
+    fig.savefig('tde_num_spikes_over_delta_t_global.png')
+
+plotNumOutputSpikesPerDeltaTForMultipleTDE(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
