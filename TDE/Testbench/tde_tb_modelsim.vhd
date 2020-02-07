@@ -118,6 +118,9 @@ architecture Behavioral of tde_tb is
 	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
 	signal tb_delta_t_value : time := 0 us;
 	
+	signal tb_new_tde_config : std_logic := '0'; -- Flag to indicate the saving_out process there is a new tde configuration
+	signal tb_end_tde_config : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
+	
     ---------------------------------------------------------------------------
     -- ONLY IN MODELSIM
     ---------------------------------------------------------------------------
@@ -175,15 +178,34 @@ begin  -- architecture Behavioral
 		-- outputs: 
 		p_num_spikes_over_global_delta_t: process is
 			variable v_delta_t : time := 0 us;  -- time difference between the facilitatory and the trigger spikes
-			variable v_detection_time : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
-			--variable v_filename : string(1 to 50); 
+			variable v_detection_time : std_logic_vector((g_NBITS - 1) downto 0) := x"0064";--(others => '0');
 		begin  -- process p_num_spikes_over_delta_t
+		
+				--
+				-- First reset
+				--
+				
+				-- Set reset to 0
+				i_nreset <= '0';
+				-- Hold reset to 0 for 1 us;
+				wait for 1 us;
+				-- Clear reset
+				i_nreset <= '1';
+				-- Wait for few microseconds
+				wait for 1 us;
 			
 			while(v_detection_time <= x"2BC") loop
+				
 				--
-				--First, open a new file
+				-- Sync
 				--
-				--file_open(f_out_spikes_global_delta_t, , write_mode);
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
+				
+				tb_new_tde_config <= '1';
+				wait for c_i_clock_period;
+				tb_new_tde_config <= '0';
+				wait for c_i_clock_period;
 				
 				--
 				-- First reset
@@ -259,15 +281,20 @@ begin  -- architecture Behavioral
 					wait for c_i_clock_period;
 					
 				end loop;
-				
-				-- Close the file
-				--file_close(f_out_spikes_global_delta_t);
+			
+				-- Indicate this iteration has been completed!
+				tb_end_tde_config <= '1';
+				wait for c_i_clock_period;
+				tb_end_tde_config <= '0';
+				wait for c_i_clock_period;
 				
 				-- Update the detection time
 				v_detection_time := v_detection_time + x"0064";
+				wait for c_i_clock_period;
 				
 				-- Clear the delta_t variable
 				v_delta_t := 0 us;
+				wait for c_i_clock_period;
 				
 			end loop;
 			
@@ -854,6 +881,73 @@ begin  -- architecture Behavioral
 			end if;
 		end process p_saving_output_spikes_delta_t;
 	end generate g_save_outspikes_file_delta_t;
+	
+	g_save_outspikes_file_global_delta_t: if c_global_delta_t_variation_test = true generate
+		-- purpose: Saving out the output spikes
+		-- type   : sequential
+		-- inputs : i_clock, i_nreset, o_output_spike
+		-- outputs: 
+		p_saving_output_spikes_global_delta_t: process (i_clock, i_nreset) is
+			variable v_filename     : string(1 to 50) := (others => ' ');
+			variable v_delta_t_case_id : integer := 0;
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);
+			variable sim_time_len_v : natural;
+			variable events_counter : integer := 0;
+		begin  -- process p_saving_output_spikes_global_delta_t
+			if i_nreset = '0' then          -- asynchronous reset (active low)
+				
+			elsif tb_end_of_simulation = '1' then
+				
+			elsif i_clock'event and i_clock = '1' then  -- rising clock edge
+				if tb_new_tde_config = '1' then
+					v_filename(1 to 32) := "output_spikes_delta_t_case_" & integer'image(v_delta_t_case_id) & ".txt";
+					v_delta_t_case_id := v_delta_t_case_id + 1;
+					file_open(f_out_spikes_global_delta_t, c_absolute_path & v_filename, write_mode);
+				end if;
+				if tb_end_tde_config = '1' then
+					file_close(f_out_spikes_global_delta_t);
+				end if;
+				if tb_new_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-1"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_global_delta_t, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if tb_end_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-2"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_global_delta_t, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if o_output_spike = '1' then
+					sim_time_len_v := time'image(now)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+					events_counter := events_counter + 1;
+
+					write(v_OLINE, events_counter);
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_global_delta_t, v_OLINE);
+
+				end if;
+				
+			end if;
+		end process p_saving_output_spikes_global_delta_t;
+	end generate g_save_outspikes_file_global_delta_t;
 	
 	--**************************************************************************
 	---------------------------------------------------------------------------*
