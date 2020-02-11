@@ -24,23 +24,23 @@ use ieee.std_logic_1164.all;
 
 -------------------------------------------------------------------------------
 
-entity basic_timer_feedback_tb is
+entity adder_tb is
 
-end entity basic_timer_feedback_tb;
+end entity adder_tb;
 
 -------------------------------------------------------------------------------
 
-architecture Behavioral of basic_timer_feedback_tb is
+architecture Behavioral of adder_tb is
 
-    component basic_timer_feedback is
+    component adder is
         generic (
             g_NBITS : integer);
         port (
-            i_current_value  : in  std_logic_vector((g_NBITS - 1) downto 0);
-            i_offset_value   : in  std_logic_vector((g_NBITS - 1) downto 0);
-            o_feedback_value : out std_logic_vector((g_NBITS - 1) downto 0)
+            i_input_data_a  : in  std_logic_vector((g_NBITS - 1) downto 0);
+            i_input_data_b   : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_output_data : out std_logic_vector((g_NBITS - 1) downto 0)
         );
-    end component basic_timer_feedback;
+    end component adder;
 
     -- component generics
     constant c_NBITS : integer := 16;
@@ -48,22 +48,22 @@ architecture Behavioral of basic_timer_feedback_tb is
     -- component ports
 
     -- Inputs
-    signal i_current_value  : std_logic_vector((c_NBITS - 1) downto 0) := (others => '0');
-    signal i_offset_value   : std_logic_vector((c_NBITS - 1) downto 0) := x"0100";
+    signal i_input_data_a  : std_logic_vector((c_NBITS - 1) downto 0) := (others => '0');
+    signal i_input_data_b   : std_logic_vector((c_NBITS - 1) downto 0) := x"0100";
 
     -- Output
-    signal o_feedback_value : std_logic_vector((c_NBITS - 1) downto 0);
+    signal o_output_data : std_logic_vector((c_NBITS - 1) downto 0);
 
 begin  -- architecture Behavioral
 
     -- component instantiation
-    DUT: entity work.basic_timer_feedback
+    DUT: entity work.adder
         generic map (
             g_NBITS => c_NBITS)
         port map (
-            i_current_value  => i_current_value,
-            i_offset_value   => i_offset_value,
-            o_feedback_value => o_feedback_value
+            i_input_data_a  => i_input_data_a,
+            i_input_data_b   => i_input_data_b,
+            o_output_data => o_output_data
         );
 
 
@@ -76,13 +76,13 @@ begin  -- architecture Behavioral
         wait for 1 us;
 
         -- Change current value of the timer
-        i_current_value <= x"0001";
+        i_input_data_a <= x"0001";
 
         -- Wait for 100 ns
         wait for 100 ns;
 
         -- Change current value of the timer
-        i_current_value <= x"0100";
+        i_input_data_a <= x"0100";
 
         -- Wait
         wait;
@@ -95,9 +95,9 @@ end architecture Behavioral;
 
 -------------------------------------------------------------------------------
 
-configuration basic_timer_feedback_tb_Behavioral_cfg of basic_timer_feedback_tb is
+configuration adder_tb_Behavioral_cfg of adder_tb is
     for Behavioral
     end for;
-end basic_timer_feedback_tb_Behavioral_cfg;
+end adder_tb_Behavioral_cfg;
 
 -------------------------------------------------------------------------------

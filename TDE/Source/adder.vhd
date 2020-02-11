@@ -23,29 +23,29 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 
-entity basic_timer_feedback is
+entity adder is
     
     generic (
         g_NBITS : integer range 0 to 32 := 16);       -- Number of bits of the input data
 
     port (
-        i_current_value  : in  std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the timer
-        i_offset_value   : in  std_logic_vector((g_NBITS - 1) downto 0);  -- Value to add to the timer current value
-        o_feedback_value : out std_logic_vector((g_NBITS - 1) downto 0));  -- Result value
+        i_input_data_a  : in  std_logic_vector((g_NBITS - 1) downto 0);  -- Current value
+        i_input_data_b   : in  std_logic_vector((g_NBITS - 1) downto 0);  -- Feedback value
+        o_output_data : out std_logic_vector((g_NBITS - 1) downto 0));  -- Result value
 
-end entity basic_timer_feedback;
+end entity adder;
 
-architecture Behavioral of basic_timer_feedback is
+architecture Behavioral of adder is
 
 begin  -- architecture Behavioral
 
     -- purpose: Result calculation
     -- type   : combinational
-    -- inputs : i_current_value, i_offset_value
-    -- outputs: o_feedback_value
-    p_inputs_addition: process (i_current_value, i_offset_value) is
+    -- inputs : i_input_data_a, i_input_data_b
+    -- outputs: o_output_data
+    p_inputs_addition: process (i_input_data_a, i_input_data_b) is
     begin  -- process p_inputs_addition
-        o_feedback_value <= i_current_value + i_offset_value;
+        o_output_data <= i_input_data_a + i_input_data_b;
     end process p_inputs_addition;
     
 
