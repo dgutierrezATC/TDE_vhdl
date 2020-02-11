@@ -24,15 +24,16 @@ import matplotlib.pyplot as plt
 import math
 import enum
 import numpy as np
+import random
 
 #
 # Setting paths and filenames
 #
 
 # NOTE: check this path before running this script 
-#source_files_absolute_path = "D:\\Universidad\\Repositorios\\GitHub\\Doctorado\\TDE_vhdl\\TDE\\Testbench\\Results\\Files\\"
+source_files_absolute_path = "D:\\Universidad\\Repositorios\\GitHub\\Doctorado\\TDE_vhdl\\TDE\\Testbench\\Results\\Files\\"
 
-source_files_absolute_path = "..\\Files\\"
+#source_files_absolute_path = "..\\Files\\"
 
 facilitatory_input_spikes_filename = source_files_absolute_path + "input_faci_spikes.txt"
 
@@ -215,6 +216,7 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
                     input_spikes_trig_timestamps, input_spikes_trig_values, \
                     faci_timer_timestamps, faci_timer_values, \
                     trig_timer_timestamps, trig_timer_values, \
+                    sgen_val2gen_timestamps, sgen_val2gen_values, \
                     sgen_clkdiv_timestamps, sgen_clkdiv_values, \
                     output_spikes_timestamps, output_spikes_values):
 
@@ -225,25 +227,41 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     fig.suptitle('TDE results')
     
     # Plotting the facilitatory and trigger spikes
-    ax1 = fig.add_subplot(511)
-    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|')
+    ax1 = fig.add_subplot(611)
+    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
+    ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=10, label='Trigger')
+    ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=2, mode="expand", frameon=False, borderaxespad=0.)
+    ax1.set_ylabel('Input')
     plt.setp(ax1.get_xticklabels(), visible=False)
+    #plt.setp(ax1.get_yticklabels(), visible=False)
     # Plotting the facilitatory timer value
-    ax2 = fig.add_subplot(512, sharex=ax1)
+    ax2 = fig.add_subplot(612, sharex=ax1)
     ax2.plot(faci_timer_timestamps, faci_timer_values, 'r')
+    ax2.set_ylabel('Faci.')
     plt.setp(ax2.get_xticklabels(), visible=False)
     # Plotting the trigger timer value
-    ax3 = fig.add_subplot(513, sharex=ax1, sharey=ax2)
+    ax3 = fig.add_subplot(613, sharex=ax1, sharey=ax2)
     ax3.plot(trig_timer_timestamps, trig_timer_values, 'b')
+    ax3.set_ylabel('Trig.')
     plt.setp(ax3.get_xticklabels(), visible=False)
-    # Plotting the spikes generator clock frequency divider
-    ax4 = fig.add_subplot(514, sharex=ax1)
-    ax4.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values)
+    # Plotting the spikes generator value to generate
+    ax4 = fig.add_subplot(614, sharex=ax1)
+    ax4.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'k')
+    ax4.set_ylabel('Val2s')
     plt.setp(ax4.get_xticklabels(), visible=False)
+    # Plotting the spikes generator clock frequency divider
+    ax5 = fig.add_subplot(615, sharex=ax1)
+    ax5.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values, 'k')
+    ax5.set_ylabel('clkdiv')
+    plt.setp(ax5.get_xticklabels(), visible=False)
     # Plotting the output spikes
-    ax5 = fig.add_subplot(515, sharex=ax1)
-    ax5.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), '|')
-
+    ax6 = fig.add_subplot(616, sharex=ax1)
+    ax6.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), '|', markersize=10)
+    ax6.set_ylabel('Output')
+    #no_output_spikes = len(output_spikes_values)
+    #output_spikes_colors = [np.random.rand(3,) for i in range(no_output_spikes)]
+    #ax6.scatter(output_spikes_timestamps, np.zeros_like(output_spikes_values), marker='|', s=100, c=output_spikes_colors)
+    plt.setp(ax6.get_yticklabels(), visible=False)
     # Show the figure
     plt.xlabel(r'Time ($\mu$s)')
     plt.show()
@@ -255,6 +273,7 @@ plotTDEresults2(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes
                 all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.sgen_val.value)], all_values[int(TDE_results_datafiles_order.sgen_val.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])
 
@@ -280,7 +299,8 @@ plotNumOutSpikesOverTime(all_timestamps[int(TDE_results_datafiles_order.output_s
 #
 # Plotting the inter-spike interval
 #
-def plotInterSpikeInterval(output_spikes_timestamps):
+
+def computeInterSpikeInterval(output_spikes_timestamps):
     # ISI values for each spike pair
     ISI_values = []
 
@@ -300,6 +320,12 @@ def plotInterSpikeInterval(output_spikes_timestamps):
         # We save the obtained result
         ISI_values.append(isi_val)
 
+    return ISI_values
+
+def plotInterSpikeInterval(output_spikes_timestamps):
+    # ISI values for each spike pair
+    ISI_values = computeInterSpikeInterval(output_spikes_timestamps)
+
     # Create the figure
     fig, ax = plt.subplots()
 
@@ -312,7 +338,93 @@ def plotInterSpikeInterval(output_spikes_timestamps):
 
     fig.savefig('tde_isi.png')
 
-plotInterSpikeInterval(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
+#plotInterSpikeInterval(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
+
+def plotInterSpikeIntervalForCase(output_spikes_timestamps, output_spikes_values):
+    # We need a matrix 
+
+    # Creates a list containing 5 lists (h), each of 8 items (w), all set to 0
+    w, h = 100, 20
+    timestamps_per_delta_t_value = [[0 for x in range(w)] for y in range(h)]
+    list_index = 0
+    item_index = 0
+    max_item_index = 0
+
+    # We need to know the number of elements of the array values
+    num_values = len(output_spikes_values)
+
+    # For each value
+    for val_index in range(num_values):
+        val = output_spikes_values[val_index]
+        ts = output_spikes_timestamps[val_index]
+
+        if val == -1:
+            item_index = 0
+        elif val == -2:
+            list_index = list_index + 1
+        else:
+            timestamps_per_delta_t_value[list_index][item_index] = ts
+            item_index = item_index + 1
+
+            if item_index > max_item_index:
+                max_item_index = item_index
+
+    global_ISI_values = []
+
+    for ts_array_index in range(list_index):
+        temp_ts_delta_t = timestamps_per_delta_t_value[ts_array_index]
+        temp_ts_delta_t_no_zeros = filter(lambda a: a != 0, temp_ts_delta_t)
+
+        if not temp_ts_delta_t_no_zeros:
+            print("Empty")
+        else:
+            temp_ISI_values = computeInterSpikeInterval(temp_ts_delta_t_no_zeros)
+            global_ISI_values.append(temp_ISI_values)
+        
+    num_global_ISI_values = len(global_ISI_values)
+
+    # Plotting the results in the same plot
+    fig, ax = plt.subplots()
+
+    pltmarkers = []
+    pltmarkers.append('.-')
+    pltmarkers.append('o-')
+    pltmarkers.append('v-')
+    pltmarkers.append('s-')
+    pltmarkers.append('*-')
+    pltmarkers.append('X-')
+    pltmarkers.append('3-')
+    pltmarkers.append('8-')
+    pltmarkers.append('>-')
+    pltmarkers.append('d-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+    pltmarkers.append('.-')
+
+    for global_isi_index in range(num_global_ISI_values):
+
+        ax.plot(global_ISI_values[global_isi_index], pltmarkers[global_isi_index], label=r'$\Delta$t: ' + str(global_isi_index*50) + r'($\mu$s)')
+
+    ax.set(xlabel='Spike pairs', ylabel=r'Time ($\mu$s)', title=r'Inter-Spike Interval over $\Delta$t')
+    ax.grid()
+
+    plt.legend(loc='upper left')
+    
+
+    plt.show()
+
+    fig.savefig('tde_isi_over_delta_t.png')
+
+plotInterSpikeIntervalForCase(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)])
 
 #
 # Plotting the number of spikes per microsecond
@@ -383,7 +495,7 @@ def plotNumOutputSpikesPerDeltaT(output_spikes_timestamps, output_spikes_values)
 
     fig.savefig('tde_num_spikes_over_delta_t.png')
 
-plotNumOutputSpikesPerDeltaT(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t.value)])
+#plotNumOutputSpikesPerDeltaT(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t.value)])
 
 #
 # Plotting different TDE configurations and results from delta_t variation
