@@ -97,16 +97,16 @@ architecture Structural of timer is
     --
     -- Basic timer feedback
     --
-    component basic_timer_feedback is
+    component adder is
         generic (
             g_NBITS : integer range 0 to 32 := 16
         );
         port (
-            i_current_value  : in  std_logic_vector((g_NBITS - 1) downto 0);
-            i_offset_value   : in  std_logic_vector((g_NBITS - 1) downto 0);
-            o_feedback_value : out std_logic_vector((g_NBITS - 1) downto 0)
+            i_input_data_a  : in  std_logic_vector((g_NBITS - 1) downto 0);
+            i_input_data_b   : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_output_data : out std_logic_vector((g_NBITS - 1) downto 0)
         );
-    end component basic_timer_feedback;
+    end component adder;
 
 begin  -- architecture Structural
     ---------------------------------------------------------------------------
@@ -146,13 +146,13 @@ begin  -- architecture Structural
     --
     -- Basic timer feedback
     --
-    basic_timer_feedback_1: entity work.basic_timer_feedback
+    adder_1: entity work.adder
         generic map (
             g_NBITS => g_NBITS)
         port map (
-            i_current_value  => w_current_value,
-            i_offset_value   => i_initial_value,
-            o_feedback_value => w_load_value
+            i_input_data_a  => w_current_value,
+            i_input_data_b   => i_initial_value,
+            o_output_data => w_load_value
         );
 
     ---------------------------------------------------------------------------
