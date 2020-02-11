@@ -110,9 +110,9 @@ architecture Behavioral of tde_tb is
 	file f_out_spikes_global_delta_t : text;
 	
 	-- Test to run
-	constant c_basic_behavioral_test : boolean := false; -- If true, TDE behavioral test with basic cases will be launched
+	constant c_basic_behavioral_test : boolean := true; -- If true, TDE behavioral test with basic cases will be launched
 	constant c_delta_t_variation_test : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
-	constant c_global_delta_t_variation_test : boolean := true; -- If true, TDE behavioral test with delta_t variation and multiple TDE configuration will be launched
+	constant c_global_delta_t_variation_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE configuration will be launched
 	
 	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
 	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
@@ -1108,7 +1108,8 @@ begin  -- architecture Behavioral
         ---------------------------------------------------------------------------
 		p_spying_sgen_val_to_generate: process
 		begin
-			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			--init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			init_signal_spy("/tde_tb/DUT/w_sgen_val2gen_feedback","/spy_spikegen_val2gen", 1);
 			wait;
 		end process p_spying_sgen_val_to_generate;
 
