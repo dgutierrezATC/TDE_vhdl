@@ -6,7 +6,7 @@
 -- Author     :   <dgutierrez@DESKTOP-16SBGVD>
 -- Company    : 
 -- Created    : 2020-01-20
--- Last update: 2020-01-21
+-- Last update: 2020-02-10
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -22,7 +22,6 @@
 -------------------------------------------------------------------------------
 -- Libraries
 -------------------------------------------------------------------------------
-
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -61,6 +60,7 @@ architecture Structural of tde is
     signal w_facilitation : std_logic;  -- Facilitation signal
 
     signal w_facilitation_timer_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the facilitation timer
+    signal w_facilitation_timer_value_weighted : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the facilitation timer weighted
     signal w_value_to_generate : std_logic_vector((g_NBITS - 1) downto 0);  -- Value to generate in the spike generator
     
     signal w_trigger_timer_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the trigger timer
@@ -68,11 +68,13 @@ architecture Structural of tde is
     
     signal w_sgen_clkdiv_ref_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv value used as reference
     signal w_sgen_clkdiv_current_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv current value
+    signal w_sgen_val2gen_feedback : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered value to generate
     signal w_clkdiv_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv valid value
-    signal w_clkdiv_clear : std_logic;
-    constant c_all_zeros : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
+    signal w_clkdiv_clear : std_logic; -- Clear signal to disable the spike generator
+    signal w_sgen_val2gen_clear : std_logic; -- Clear signal to the register which store the last loaded value into the sgen
+    constant c_all_zeros : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0'); -- All zeros register
     
-    signal trig_latched : std_logic;
+    signal r_trigger_latched : std_logic; -- Latch
 
     ---------------------------------------------------------------------------
     -- Components declaration
@@ -127,6 +129,20 @@ architecture Structural of tde is
             o_data_out : out std_logic_vector((g_NBITS - 1) downto 0)
         );
     end component generic_register;
+
+    --
+    -- Adder
+    --
+    component adder is
+        generic (
+            g_NBITS : integer range 0 to 32 := 16
+        );
+        port (
+            i_input_data_a : in  std_logic_vector((g_NBITS - 1) downto 0);
+            i_input_data_b : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_output_data  : out std_logic_vector((g_NBITS - 1) downto 0)
+        );
+    end component adder;
 
     --
     -- Subtractor
@@ -184,9 +200,9 @@ begin  -- architecture Structural
     process(i_clock, i_nreset)
     begin
         if i_nreset = '0' then
-            trig_latched <= '0';
+            r_trigger_latched <= '0';
         elsif i_clock'event and i_clock = '1' then
-            trig_latched <= w_trigger;
+            r_trigger_latched <= w_trigger;
         end if;
     end process;
 
@@ -222,11 +238,53 @@ begin  -- architecture Structural
         )
         port map (
             i_data_in       => w_facilitation_timer_value,
-            o_data_out      => w_value_to_generate,
+            o_data_out      => w_facilitation_timer_value_weighted,
             i_left_right    => '0',
             i_num_positions => i_weight
+            );
+
+    --
+    -- Value to generate feedback adder
+    --
+    sgen_value_feedback_adder: adder
+        generic map (
+            g_NBITS => g_NBITS
+        )
+        port map (
+            i_input_data_a => w_facilitation_timer_value_weighted,
+            i_input_data_b => w_sgen_val2gen_feedback,
+            o_output_data  => w_value_to_generate
         );
 
+    --
+    -- Value to generate register
+    --
+    sgen_val2gen_register: generic_register
+        generic map (
+            g_NBITS => g_NBITS
+        )
+        port map (
+            i_clock    => i_clock,
+            i_nreset   => i_nreset,
+            i_data_in  => w_value_to_generate,
+            i_load     => r_trigger_latched,
+            i_clear    => w_sgen_val2gen_clear,
+            o_data_out => w_sgen_val2gen_feedback
+        );
+
+    --
+    -- End of facilitatory timer detection
+    --
+    sgen_val2gen_reg_clear: comparator
+    generic map (
+        g_NBITS => g_NBITS
+    )
+    port map (
+        i_input_a => w_facilitation_timer_value,
+        i_input_b => c_all_zeros,
+        o_equal   => w_sgen_val2gen_clear
+    );
+    
     --
     -- Trigger timer
     --
@@ -270,7 +328,7 @@ begin  -- architecture Structural
             i_clock    => i_clock,
             i_nreset   => i_nreset,
             i_data_in  => w_trigger_timer_value_shifted,
-            i_load     => trig_latched,--w_trigger,
+            i_load     => r_trigger_latched,
             i_clear    => '0',
             o_data_out => w_sgen_clkdiv_ref_value
         );
@@ -312,7 +370,7 @@ begin  -- architecture Structural
             g_NBITS => g_NBITS
         )
         port map (
-            i_input_a => w_sgen_clkdiv_current_value,
+            i_input_a => w_trigger_timer_value_shifted,--w_sgen_clkdiv_current_value,
             i_input_b => c_all_zeros,
             o_equal   => w_clkdiv_clear
         );
@@ -330,7 +388,7 @@ begin  -- architecture Structural
             i_nreset          => i_nreset,
             i_genfreq_divisor => w_clkdiv_value,
             i_data_in         => w_value_to_generate,
-            i_write           => trig_latched,--w_trigger,
+            i_write           => r_trigger_latched,
             i_clear           => w_clkdiv_clear,
             o_spike_out       => o_output_spike
         );
