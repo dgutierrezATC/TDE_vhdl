@@ -40,22 +40,40 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 
 <h2 name="Behavior_overview">Behavior overview</h2>
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+Brief explanation about how the TDE works.
 </p>
 
 <h2 name="Key_features">Key features</h2>
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+Next, we summarize the main features of the TDE digital implementation:
+<ul align="justify">
+<li>Scalability</li>
+<li>Adaptability</li>
+</ul>
 </p>
 
 <h2 name="Applications">Neuromorphic applications</h2>
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+List of open projects which are using this model.
+</p>
+
+<h3 name="Optical_flow">Event-based Optical Flow estimation</h3>
+<p align="justify">
+Estimate the optical flow by using event-based cameras and TDE-based networks.
+</p>
+
+<h3 name="Sound_localization">Event-based Sound Source Localization</h3>
+<p align="justify">
+Determine the localization of a sound source by using the Neuromorphic Auditory Sensor (NAS) and TDE-based networks.
 </p>
 
 <h2 name="Credits">Credits</h2>
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+We would like to thank and give credit to:
+<ul align="justify">
+<li>Robotics and Technology of Computers Lab. from the University of Sevilla (Spain).</li>
+<li>Neuromorphic Behavin Systems, CITEC, Biëlefeld University (Germany)</li>
+</ul>
 </p>
 
 <h2 name="License">License</h2>
