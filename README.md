@@ -10,6 +10,12 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 <li><a href="#What_is_TDE">What is the TDE?</a></li>
 <li><a href="#How_it_works">How it works?</a></li>
 <li><a href="#Digital_model">Digital implementation</a></li>
+<li><a href="#Behavior_overview">Behavior overview</a></li>
+<li><a href="#Key_features">Key features</a></li>
+<li><a href="#Applications">Neuromorphic applications</a></li>
+<li><a href="#Credits">Credits</a></li>
+<li><a href="#License">License</a></li>
+<li><a href="#Cite">Cite this work</a></li>
 </ul>
 </p>
 
@@ -30,4 +36,40 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 
 <p align="center">
 <img align="center" src="https://github.com/dgutierrezATC/TDE_vhdl/blob/master/TDE/Documentation/Wiki/Wiki_images/Fig_TDE_vhdl_block_diagram.png" alt="TDE VHDL architecture">
+</p>
+
+<h2 name="Behavior_overview">Behavior overview</h2>
+<p align="justify">
+The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+</p>
+
+<h2 name="Key_features">Key features</h2>
+<p align="justify">
+The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+</p>
+
+<h2 name="Applications">Neuromorphic applications</h2>
+<p align="justify">
+The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+</p>
+
+<h2 name="Credits">Credits</h2>
+<p align="justify">
+The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+</p>
+
+<h2 name="License">License</h2>
+<p align="justify">
+This project is licensed under the GPL License - see the <a href="https://raw.githubusercontent.com/RTC-research-group/OpenNAS/master/LICENSE">LICENSE.md</a> file for details.
+</p>
+<p align="justify">
+Copyright © 2020 Daniel Gutierrez-Galan<br>  
+<a href="mailto:dgutierrez@atc.us.es">dgutierrez@atc.us.es</a>
+</p>
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
+<h2 name="Cite">Cite this work</h2>
+<p align="justify">
+Waiting for publication...
 </p>
