@@ -108,11 +108,15 @@ architecture Behavioral of tde_tb is
 	-- Saving results of the delta_t variation test in a file
 	file f_out_spikes_delta_t : text open write_mode is c_absolute_path & "output_spikes_delta_t.txt";  -- Output spikes from the TDE model
 	file f_out_spikes_global_delta_t : text;
+	file f_out_spikes_tunning_curves : text;
 	
 	-- Test to run
 	constant c_basic_behavioral_test : boolean := true; -- If true, TDE behavioral test with basic cases will be launched
+	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "10000000";
 	constant c_delta_t_variation_test : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
-	constant c_global_delta_t_variation_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE configuration will be launched
+	constant c_global_delta_t_variation_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE detec time will be launched
+	constant c_tunning_curves_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
+	
 	
 	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
 	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
@@ -168,17 +172,161 @@ begin  -- architecture Behavioral
         );
 
     -- clock generation
-    i_clock <= not i_clock after c_i_clock_period/2;
+	i_clock <= not i_clock after c_i_clock_period/2;
 	
+	g_tunning_curves_test : if c_tunning_curves_test = true generate
+		-- purpose: process for generating the response of multiple TDE configs over different delta_t values
+		-- type   :
+		-- inputs : 
+		-- outputs:
+		p_num_spikes_of_tunning_curves: process is
+			variable v_delta_t : time := 0 us;  -- time difference between the facilitatory and the trigger spikes
+			variable v_detection_time : std_logic_vector((g_NBITS - 1) downto 0) := x"0064"; -- 100: 0x64
+			variable v_decay : std_logic_vector((g_LOG2NBITS - 1) downto 0) := x"2"; 
+			variable v_weight : std_logic_vector((g_LOG2NBITS - 1) downto 0) := x"4";
+		begin -- process p_num_spikes_of_tunning_curves
+			
+			--
+			-- First reset
+			--
+			
+			-- Set reset to 0
+			i_nreset <= '0';
+			-- Hold reset to 0 for 1 us;
+			wait for 1 us;
+			-- Clear reset
+			i_nreset <= '1';
+			-- Wait for few microseconds
+			wait for 1 us;
+
+			while(v_detection_time <= x"2BC") loop
+				
+				--
+				-- Sync
+				--
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
+				
+				tb_new_tde_config <= '1';
+				wait for c_i_clock_period;
+				tb_new_tde_config <= '0';
+				wait for c_i_clock_period;
+				
+				--
+				-- First reset
+				--
+				
+				-- Set reset to 0
+				i_nreset <= '0';
+				-- Hold reset to 0 for 1 us;
+				wait for 1 us;
+				-- Clear reset
+				i_nreset <= '1';
+				-- Wait for few microseconds
+				wait for 1 us;
+
+				--
+				-- TDE configuration
+				--
+
+				-- Set all the parameters (w = 4; d = 2; detec = 700)
+				i_weight <= v_weight;
+				i_decay  <= v_decay;
+				i_detection_time <= v_detection_time;
+
+				-- Wait for 1 us;
+
+				--
+				-- Idle
+				--
+				-- Let the system in IDLE for 10 us
+				wait for 10 us;
+
+				--
+				-- Sync
+				--
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
+
+				--
+				-- Loop
+				--
+				while v_delta_t <= 750 us loop
+					-- Activate flag "new_delta_t_value"
+					wait for c_i_clock_period;
+					tb_delta_t_value <= v_delta_t;
+					tb_new_delta_t_value <= '1';
+					wait for c_i_clock_period;
+					tb_new_delta_t_value <= '0';
+					wait for c_i_clock_period;
+					
+					-- Facilitatory pulse
+					i_facilitatory <= '1';
+					wait for c_i_clock_period;
+					i_facilitatory <= '0';
+
+					-- Wait for delta_t
+					wait for v_delta_t;
+
+					-- Trigger pulse
+					i_trigger <= '1';
+					wait for c_i_clock_period;
+					i_trigger <= '0';
+
+					-- Wait for 710 us
+					wait for 710 us;
+
+					-- Update the delta_t value
+					v_delta_t := v_delta_t + 50 us;
+					
+					wait for c_i_clock_period;
+					tb_end_delta_t_value <= '1';
+					wait for c_i_clock_period;
+					tb_end_delta_t_value <= '0';
+					wait for c_i_clock_period;
+					
+				end loop;
+			
+				-- Indicate this iteration has been completed!
+				tb_end_tde_config <= '1';
+				wait for c_i_clock_period;
+				tb_end_tde_config <= '0';
+				wait for c_i_clock_period;
+				
+				-- Update the detection time TO DO!!!!!!!!!!!!!!!!!!!!!
+				v_detection_time := v_detection_time + x"0064"; -- 100: 0x64; 200: 0xCB
+				--v_weight := v_weight + 
+				wait for c_i_clock_period;
+				
+				-- Clear the delta_t variable
+				v_delta_t := 0 us;
+				wait for c_i_clock_period;
+				
+			end loop;
+			
+			-- Check the output
+			report "End of the delta_t simulation" severity note;
+			
+			-- Finishing the simulation
+			tb_end_of_simulation <= '1';
+			
+			-- Wait forever
+			wait;
+
+		end process p_num_spikes_of_tunning_curves;
+
+	end generate g_tunning_curves_test;
 	
 	g_global_delta_t_test: if c_global_delta_t_variation_test = true generate
-		-- purpose: process for generating the response of multiple TDE configs over different delta_t values
+		-- purpose: process for generating the response of multiple TDE detec time over different delta_t values
 		-- type   :
 		-- inputs : 
 		-- outputs: 
 		p_num_spikes_over_global_delta_t: process is
 			variable v_delta_t : time := 0 us;  -- time difference between the facilitatory and the trigger spikes
 			variable v_detection_time : std_logic_vector((g_NBITS - 1) downto 0) := x"0064";--(others => '0');
+			variable v_decay : std_logic_vector((g_LOG2NBITS - 1) downto 0) := x"2"; 
+			variable v_weight : std_logic_vector((g_LOG2NBITS - 1) downto 0) := x"4";
 		begin  -- process p_num_spikes_over_delta_t
 		
 				--
@@ -289,7 +437,7 @@ begin  -- architecture Behavioral
 				wait for c_i_clock_period;
 				
 				-- Update the detection time
-				v_detection_time := v_detection_time + x"0064";
+				v_detection_time := v_detection_time + x"0064"; -- 100: 0x64; 200: 0xCB
 				wait for c_i_clock_period;
 				
 				-- Clear the delta_t variable
@@ -431,7 +579,7 @@ begin  -- architecture Behavioral
 			--
 
 			-- Set all the parameters
-			i_weight <= x"4";
+			i_weight <= x"1";
 			i_decay  <= x"2";
 			i_detection_time <= x"02BC";
 
@@ -453,244 +601,287 @@ begin  -- architecture Behavioral
 			-- Case 0: 1 facilitation pulse 
 			---------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(0) = '1' then
 
-			-- Inconming pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait for 710 us
-			wait for 710 us;
+				-- Inconming pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Check the output
-			report "End of CASE 0." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 0." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			---------
 			-- Case 1: 1 trigger pulse 
 			---------
+			
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(1) = '1' then
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Inconming pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Inconming pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Wait for 710 us
-			wait for 10 us;
+				-- Wait for 710 us
+				wait for 10 us;
 
-			-- Check the output
-			report "End of CASE 1." severity note;
+				-- Check the output
+				report "End of CASE 1." severity note;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			---------
 			-- Case 2: 1 trigger pulse, then 1 facilitatory pulse 
 			---------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(2) = '1' then
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait 1 clock cycle
-			wait for c_i_clock_period;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Wait 1 clock cycle
+				wait for c_i_clock_period;
 
-			-- Wait for 710 us
-			wait for 710 us;
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Check the output
-			report "End of CASE 2." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 2." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			---------
 			-- Case 3: 1 facilitatory pulse, then 1 trigger pulse after 710 us
 			--         (out of the detection time)
 			---------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(3) = '1' then
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait 1 clock cycle
-			wait for 710 us;
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Wait 1 clock cycle
+				wait for 710 us;
 
-			-- Wait for 710 us
-			wait for 710 us;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Check the output
-			report "End of CASE 3." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 3." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			-------
 			-- Case 4: 1 facilitatory pulse, then 1 trigger pulse after 10 us (low delay)
 			-------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(4) = '1' then
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait 1 clock cycle
-			wait for 10 us;
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Wait 1 clock cycle
+				wait for 10 us;
 
-			-- Wait for 710 us
-			wait for 710 us;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Check the output
-			report "End of CASE 4." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 4." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			-------
 			-- Case 5: 1 facilitatory pulse, then 1 trigger pulse after 600 us (big delay)
 			-------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(5) = '1' then
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait 1 clock cycle
-			wait for 600 us;
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Wait 1 clock cycle
+				wait for 600 us;
 
-			-- Wait for 710 us
-			wait for 710 us;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Check the output
-			report "End of CASE 5." severity note;
+				-- Wait for 710 us
+				wait for 710 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 5." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			---------
 			-- Case 6: 1 facilitatory pulse, then 1 trigger pulse after 100 us,
 			--         and 1 trigger pulse after (100) + 300 us
 			---------
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(6) = '1' then
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Wait 1 clock cycle
-			wait for 100 us;
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Wait 1 clock cycle
+				wait for 100 us;
 
-			-- Wait for 300 us
-			wait for 10 us;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Wait for 300 us
+				wait for 10 us;
 
-			-- Wait
-			wait for 700 us;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
 
-			-- Check the output
-			report "End of CASE 6." severity note;
+				-- Wait
+				wait for 700 us;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Check the output
+				report "End of CASE 6." severity note;
+
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
 
 			---------
 			-- Case 7: 1 facilitatory pulse, then 1 facilitatory pulse after 100 us,
 			--         and 1 trigger pulse after (100) + 300 us
 			---------
+			
+			-- If this case has been enabled
+			if c_basic_behavioral_test_cases_selection(7) = '1' then
 
-			-- Sync
-			wait until i_clock'event and  i_clock = '1';
-			wait for c_i_clock_period;
+				-- Sync
+				wait until i_clock'event and  i_clock = '1';
+				wait for c_i_clock_period;
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Wait 1 clock cycle
-			wait for 100 us;
+				-- Wait 1 clock cycle
+				wait for 100 us;
 
-			-- Facilitatory pulse
-			i_facilitatory <= '1';
-			wait for c_i_clock_period;
-			i_facilitatory <= '0';
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-			-- Wait for 300 us
-			wait for 300 us;
+				-- Wait for 300 us
+				wait for 300 us;
 
-			-- Trigger pulse
-			i_trigger <= '1';
-			wait for c_i_clock_period;
-			i_trigger <= '0';
+				-- Trigger pulse
+				--i_trigger <= '1';
+				--wait for c_i_clock_period;
+				--i_trigger <= '0';
 
-			-- Wait
-			wait for 700 us;
+				-- Wait
+				wait for 1150 us;
 
-			-- Check the output
-			report "End of CASE 7." severity note;
+				-- Check the output
+				report "End of CASE 7." severity note;
 
-			-- Wait for a few of microseconds
-			wait for 5 us;
+				-- Wait for a few of microseconds
+				wait for 5 us;
+
+			end if;
+
+			-- Report the end of the simulation
+			report "END OF SIMULATION!" severity note;
 
 			-- Finishing the simulation
 			tb_end_of_simulation <= '1';
@@ -948,6 +1139,75 @@ begin  -- architecture Behavioral
 			end if;
 		end process p_saving_output_spikes_global_delta_t;
 	end generate g_save_outspikes_file_global_delta_t;
+
+	g_save_outspikes_file_tunning_curves: if c_tunning_curves_test = true generate
+		-- purpose: Saving out the output spikes
+		-- type   : sequential
+		-- inputs : i_clock, i_nreset, o_output_spike
+		-- outputs: 
+		p_saving_output_spikes_tunning_curves: process(i_clock, i_nreset) is
+			variable v_filename     : string(1 to 50) := (others => ' ');
+			variable v_tunning_curve_config : integer := 0;
+			variable v_OLINE        : line;
+			variable sim_time_str_v : string(1 to 30);
+			variable sim_time_len_v : natural;
+			variable events_counter : integer := 0;
+		begin
+			if i_nreset = '0' then          -- asynchronous reset (active low)
+				
+			elsif tb_end_of_simulation = '1' then
+				
+			elsif i_clock'event and i_clock = '1' then  -- rising clock edge
+				if tb_new_tde_config = '1' then
+					v_filename(1 to 32) := "output_spikes_tunning_curve_config_" & integer'image(v_tunning_curve_config) & ".txt";
+					v_tunning_curve_config := v_tunning_curve_config + 1;
+					file_open(f_out_spikes_tunning_curves, c_absolute_path & v_filename, write_mode);
+				end if;
+				if tb_end_tde_config = '1' then
+					file_close(f_out_spikes_tunning_curves);
+				end if;
+				if tb_new_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-1"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_tunning_curves, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if tb_end_delta_t_value = '1' then
+					sim_time_len_v := time'image(tb_delta_t_value)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(tb_delta_t_value);
+					
+					write(v_OLINE, string'("-2"));
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_tunning_curves, v_OLINE);
+					
+					events_counter := 0;
+				end if;
+				if o_output_spike = '1' then
+					sim_time_len_v := time'image(now)'length;
+					sim_time_str_v := (others => ' ');
+					sim_time_str_v(1 to sim_time_len_v) := time'image(now);
+					events_counter := events_counter + 1;
+
+					write(v_OLINE, events_counter);
+					write(v_OLINE, ';', right, 1);
+					write(v_OLINE, sim_time_str_v, right, 1);
+					writeline(f_out_spikes_tunning_curves, v_OLINE);
+
+				end if;
+				
+			end if;
+
+		end process p_saving_output_spikes_tunning_curves;
+
+	end generate g_save_outspikes_file_tunning_curves;
 	
 	--**************************************************************************
 	---------------------------------------------------------------------------*
