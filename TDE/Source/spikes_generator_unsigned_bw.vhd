@@ -144,9 +144,10 @@ begin
     -- type   : combinational
     -- inputs : r_value_to_generate, w_cicle_wise
     -- outputs: w_generate
-    p_generate_condition: process(r_value_to_generate, w_cicle_wise)
-    begin
-        if (conv_integer(r_value_to_generate) > conv_integer(w_cicle_wise)) then
+    p_generate_condition: process(r_value_to_generate, w_cicle_wise, r_cicle)
+    begin --2**g_NBITS_DATA
+        if (((conv_integer(r_cicle) * conv_integer(r_value_to_generate)) mod 65536) < conv_integer(r_value_to_generate)) then -- Spike generator “Modulus�? Exhaustive Method Implementation
+        --if (conv_integer(r_value_to_generate) > conv_integer(w_cicle_wise)) then
             w_generate <= '1';
         else
             w_generate <= '0';
