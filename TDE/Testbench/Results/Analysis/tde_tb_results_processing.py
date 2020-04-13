@@ -182,6 +182,57 @@ for file_index in range(number_of_files):
 #
 # Plotting the main results
 #
+
+def plotFacilitationBlockOutput(input_spikes_faci_timestamps, input_spikes_faci_values, \
+                                faci_timer_timestamps, faci_timer_values, \
+                                faci_timer_weighted_timestamps, faci_timer_weighted_values, \
+                                sgen_val2gen_timestamps, sgen_val2gen_values):
+
+    # Create the figure and the subplots
+    fig = plt.figure()
+
+    # Change the figure title
+    fig.suptitle('Gain generator block signals')
+    
+    # Plotting the facilitatory and trigger spikes
+    ax1 = fig.add_subplot(411)
+    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
+    y_labels = ['faci.']
+    y_pos = np.arange(len(y_labels))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(y_labels)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+    # Plotting the facilitatory timer value
+    ax2 = fig.add_subplot(412, sharex=ax1)
+    ax2.plot(faci_timer_timestamps, faci_timer_values, 'r')
+    ax2.set_ylabel('timer_0')
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    # Plotting the trigger timer value
+    ax3 = fig.add_subplot(413, sharex=ax1, sharey=ax2)
+    ax3.plot(faci_timer_weighted_timestamps, faci_timer_weighted_values, 'r')
+    ax3.set_ylabel('shift_1.')
+    plt.setp(ax3.get_xticklabels(), visible=False)
+    # Plotting the spikes generator value to generate
+    ax4 = fig.add_subplot(414, sharex=ax1)
+    ax4.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'r')
+    y_labels = ['0.00']
+    y_pos = np.arange(len(y_labels))
+    ax4.set_yticks(y_pos)
+    ax4.set_yticklabels(y_labels)
+    ax4.set_ylabel('add_0')
+    plt.setp(ax4.get_xticklabels(), visible=True)
+    
+    plt.xlabel(r'Time ($\mu$s)')
+    plt.show()
+
+    # Saving out the figure
+    fig.savefig('gain_block_results.png')
+
+plotFacilitationBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.faci_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.faci_timer_weighted.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.sgen_val.value)], all_values[int(TDE_results_datafiles_order.sgen_val.value)])
+
 def plotTDEresults(input_spikes_faci_timestamps, input_spikes_faci_values, \
                     input_spikes_trig_timestamps, input_spikes_trig_values, \
                     faci_timer_timestamps, faci_timer_values, \
@@ -228,10 +279,15 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     
     # Plotting the facilitatory and trigger spikes
     ax1 = fig.add_subplot(611)
+    #ax1.plot(input_spikes_faci_timestamps, np.full((1, len(input_spikes_faci_values)), 1.0), 'r|', markersize=10, label='Facilitatory')
     ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
     ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=10, label='Trigger')
     ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=2, mode="expand", frameon=False, borderaxespad=0.)
     ax1.set_ylabel('Input')
+    y_labels = ['faci.', 'trig.']
+    y_pos = np.arange(len(y_labels))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(y_labels)
     plt.setp(ax1.get_xticklabels(), visible=False)
     #plt.setp(ax1.get_yticklabels(), visible=False)
     # Plotting the facilitatory timer value
@@ -258,10 +314,14 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     ax6 = fig.add_subplot(616, sharex=ax1)
     ax6.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), '|', markersize=10)
     ax6.set_ylabel('Output')
+    y_label = ['TDE']
+    y_pos = np.arange(len(y_label))
+    ax6.set_yticks(y_pos)
+    ax6.set_yticklabels(y_label)
     #no_output_spikes = len(output_spikes_values)
     #output_spikes_colors = [np.random.rand(3,) for i in range(no_output_spikes)]
     #ax6.scatter(output_spikes_timestamps, np.zeros_like(output_spikes_values), marker='|', s=100, c=output_spikes_colors)
-    plt.setp(ax6.get_yticklabels(), visible=False)
+    #plt.setp(ax6.get_yticklabels(), visible=False)
     # Show the figure
     plt.xlabel(r'Time ($\mu$s)')
     plt.show()
