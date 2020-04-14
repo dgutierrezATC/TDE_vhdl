@@ -1,10 +1,31 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "shift_register"
--- Project    : 
+-- Project    : TDE_vhdl
 -------------------------------------------------------------------------------
 -- File       : shift_register_tb.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
 -- Created    : 2020-01-20
 -- Last update: 2020-01-20
 -- Platform   : 
@@ -43,8 +64,8 @@ architecture Behavioral of shift_register_tb is
     -------------------------------------------------------------------------------
     component shift_register is
         generic (
-            g_NBITS     : integer := 16;
-            g_LOG2NBITS : integer := 4
+            g_NBITS         : integer := 16;
+            g_LOG2NBITS     : integer := 4
         );
         port (
             i_data_in       : in  std_logic_vector((g_NBITS - 1) downto 0);
@@ -58,25 +79,32 @@ architecture Behavioral of shift_register_tb is
     -- UUT signals declaration
     -------------------------------------------------------------------------------
 
-    -- component generics
-    constant g_NBITS     : integer := 16;
-    constant g_LOG2NBITS : integer := 4;
+    -- Generics
+    constant g_NBITS       : integer                                      := 16;
+    constant g_LOG2NBITS   : integer                                      := 4;
 
-    -- component ports
-    signal i_data_in       : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
-    signal o_data_out      : std_logic_vector((g_NBITS - 1) downto 0);
-    signal i_left_right    : std_logic := '0';
+    -- Inputs
+    signal i_data_in       : std_logic_vector((g_NBITS - 1) downto 0)     := (others => '0');
+    signal i_left_right    : std_logic                                    := '0';
     signal i_num_positions : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
+
+    -- Outputs
+    signal o_data_out      : std_logic_vector((g_NBITS - 1) downto 0);
+    
+    ---------------------------------------------------------------------------
+    -- Testbench signals declaration
+    ---------------------------------------------------------------------------
+    
 
 begin  -- architecture Behavioral
 
     ---------------------------------------------------------------------------
-    -- UUT instantiation
+    -- Instantiate the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
-    DUT: entity work.shift_register
+    UUT: entity work.shift_register(Behavioral)
         generic map (
-            g_NBITS     => g_NBITS,
-            g_LOG2NBITS => g_LOG2NBITS
+            g_NBITS         => g_NBITS,
+            g_LOG2NBITS     => g_LOG2NBITS
         )
         port map (
             i_data_in       => i_data_in,
@@ -86,10 +114,19 @@ begin  -- architecture Behavioral
         );
 
     ---------------------------------------------------------------------------
-    -- Testbench processes
+    -- Clocks generation
     ---------------------------------------------------------------------------
     
-    WaveGen_Proc: process
+    
+    ---------------------------------------------------------------------------
+    -- Processes
+    ---------------------------------------------------------------------------
+    
+    -- purpose: Set the signals to generate the stimuli
+    -- type   : combinational
+    -- inputs : 
+    -- outputs: 
+    p_stimuli: process
     begin
         -- insert signal assignments here
 
@@ -165,9 +202,7 @@ begin  -- architecture Behavioral
         -- Wait forever
         wait;
         
-    end process WaveGen_Proc;
-
-    
+    end process p_stimuli;
 
 end architecture Behavioral;
 

@@ -1,9 +1,30 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
--- Title      : Testbench for design "basic_timer_feedback"
--- Project    : 
+-- Title      : Testbench for design "adder"
+-- Project    : TDE_vhdl
 -------------------------------------------------------------------------------
--- File       : basic_timer_feedback_tb.vhd
--- Author     :   <Dani@DESKTOP-A0R07AP>
+-- File       : adder_tb.vhd
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
 -- Company    : University of Seville
 -- Created    : 2020-01-09
 -- Last update: 2020-01-09
@@ -12,63 +33,83 @@
 -------------------------------------------------------------------------------
 -- Description: 
 -------------------------------------------------------------------------------
--- Copyright (c) 2020 University of Seville
+-- Copyright (c) 2020
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
 -- 2020-01-09  1.0      Dani	Created
 -------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- Libraries
+-------------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 
--------------------------------------------------------------------------------
-
+-----------------------------------------------------------------------------
+-- Entity declaration
+-----------------------------------------------------------------------------
 entity adder_tb is
 
 end entity adder_tb;
 
 -------------------------------------------------------------------------------
-
+-- Architectures
+-------------------------------------------------------------------------------
 architecture Behavioral of adder_tb is
 
+    ---------------------------------------------------------------------------
+    -- Component declaration for the Unit Under Test (UUT)
+    ---------------------------------------------------------------------------
     component adder is
         generic (
-            g_NBITS : integer);
+            g_NBITS        : integer
+        );
         port (
-            i_input_data_a  : in  std_logic_vector((g_NBITS - 1) downto 0);
-            i_input_data_b   : in  std_logic_vector((g_NBITS - 1) downto 0);
-            o_output_data : out std_logic_vector((g_NBITS - 1) downto 0)
+            i_input_data_a : in  std_logic_vector((g_NBITS - 1) downto 0);
+            i_input_data_b : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_output_data  : out std_logic_vector((g_NBITS - 1) downto 0)
         );
     end component adder;
 
-    -- component generics
-    constant c_NBITS : integer := 16;
-
-    -- component ports
+    ---------------------------------------------------------------------------
+    -- UUT signals declaration
+    ---------------------------------------------------------------------------
+    
+    -- Generics
+    constant c_NBITS      : integer                                  := 16;
 
     -- Inputs
-    signal i_input_data_a  : std_logic_vector((c_NBITS - 1) downto 0) := (others => '0');
-    signal i_input_data_b   : std_logic_vector((c_NBITS - 1) downto 0) := x"0100";
+    signal i_input_data_a : std_logic_vector((c_NBITS - 1) downto 0) := (others => '0');
+    signal i_input_data_b : std_logic_vector((c_NBITS - 1) downto 0) := x"0100";
 
     -- Output
-    signal o_output_data : std_logic_vector((c_NBITS - 1) downto 0);
+    signal o_output_data  : std_logic_vector((c_NBITS - 1) downto 0);
+    
+    ---------------------------------------------------------------------------
+    -- Testbench signals declaration
+    ---------------------------------------------------------------------------
 
 begin  -- architecture Behavioral
 
-    -- component instantiation
-    DUT: entity work.adder
+    ---------------------------------------------------------------------------
+    -- Instantiate the Unit Under Test (UUT)
+    ---------------------------------------------------------------------------
+    UUT: entity work.adder(Behavioral)
         generic map (
-            g_NBITS => c_NBITS)
+            g_NBITS        => c_NBITS
+        )
         port map (
-            i_input_data_a  => i_input_data_a,
-            i_input_data_b   => i_input_data_b,
-            o_output_data => o_output_data
+            i_input_data_a => i_input_data_a,
+            i_input_data_b => i_input_data_b,
+            o_output_data  => o_output_data
         );
 
 
-    -- waveform generation
-    WaveGen_Proc: process
+    -----------------------------------------------------------------------------
+    -- Processes
+    -----------------------------------------------------------------------------
+    p_stimuli: process
     begin
         -- insert signal assignments here
 
@@ -87,7 +128,7 @@ begin  -- architecture Behavioral
         -- Wait
         wait;
         
-    end process WaveGen_Proc;
+    end process p_stimuli;
 
     
 

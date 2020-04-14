@@ -1,10 +1,31 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "generic_register"
--- Project    : 
+-- Project    : TDE_vhdl
 -------------------------------------------------------------------------------
 -- File       : generic_register_tb.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
 -- Created    : 2020-01-20
 -- Last update: 2020-01-21
 -- Platform   : 
@@ -41,7 +62,7 @@ architecture Behavioral of generic_register_tb is
     ---------------------------------------------------------------------------
     component generic_register is
         generic (
-            g_NBITS : integer range 0 to 32 := 16
+            g_NBITS    : integer range 0 to 32 := 16
         );
         port (
             i_clock    : in  std_logic;
@@ -57,30 +78,34 @@ architecture Behavioral of generic_register_tb is
     -- UUT signals declaration
     ---------------------------------------------------------------------------
     
-    -- component generics
-    constant g_NBITS : integer range 0 to 32 := 16;
+    -- Generics
+    constant g_NBITS  : integer range 0 to 32 := 16;
 
-    -- component input ports
-    signal i_clock    : std_logic := '0';
-    signal i_nreset   : std_logic := '0';
+    -- Inputs
+    signal i_clock    : std_logic                                := '0';
+    signal i_nreset   : std_logic                                := '0';
     signal i_data_in  : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
-    signal i_load     : std_logic := '0';
-    signal i_clear    : std_logic := '0';
+    signal i_load     : std_logic                                := '0';
+    signal i_clear    : std_logic                                := '0';
 
-    -- component output ports
+    -- Outputs
     signal o_data_out : std_logic_vector((g_NBITS - 1) downto 0);
 
-    -- clock
+    ---------------------------------------------------------------------------
+    -- Testbench signals declaration
+    ---------------------------------------------------------------------------
+    
+    -- Clock
     constant c_i_clock_period : time := 20 ns;
 
 begin  -- architecture Behavioral
 
     ---------------------------------------------------------------------------
-    -- UUT instantiation
+    -- Instantiate the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
-    DUT: entity work.generic_register
+    UUT: entity work.generic_register(Behavioral)
         generic map (
-            g_NBITS => g_NBITS
+            g_NBITS    => g_NBITS
         )
         port map (
             i_clock    => i_clock,
@@ -91,11 +116,20 @@ begin  -- architecture Behavioral
             o_data_out => o_data_out
         );
 
-    -- clock generation
+    ---------------------------------------------------------------------------
+    -- Clocks generation
+    ---------------------------------------------------------------------------
     i_clock <= not i_clock after c_i_clock_period/2;
 
-    -- waveform generation
-    WaveGen_Proc: process
+    -----------------------------------------------------------------------------
+    -- Processes
+    -----------------------------------------------------------------------------
+    
+    -- purpose: Set the signals to generate the stimuli
+    -- type   : combinational
+    -- inputs : 
+    -- outputs: 
+    p_stimuli: process
     begin
         -- insert signal assignments here
 
@@ -204,7 +238,7 @@ begin  -- architecture Behavioral
         
 
         wait;
-    end process WaveGen_Proc;
+    end process p_stimuli;
 
     
 

@@ -1,93 +1,119 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 07.01.2020 18:08:42
--- Design Name: 
--- Module Name: timer_tb - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
+-------------------------------------------------------------------------------
+-- Title      : Testbench for design "basic_timer"
+-- Project    : TDE_vhdl
+-------------------------------------------------------------------------------
+-- File       : basic_timer_tb.vhd
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
+-- Created    : 2020-01-07
+-- Last update: 2020-04-13
+-- Platform   : 
+-- Standard   : VHDL'93/02
+-------------------------------------------------------------------------------
 -- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-- Copyright (c) 2020 
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author  Description
+-- 2020-01-07  1.0      dgutierrez	Created
+-------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- Libraries
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.all;
-
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
-use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
+-----------------------------------------------------------------------------
+-- Entity declaration
+-----------------------------------------------------------------------------
 entity basic_timer_tb is
+
 end basic_timer_tb;
 
+-------------------------------------------------------------------------------
+-- Architectures
+-------------------------------------------------------------------------------
 architecture Behavioral of basic_timer_tb is
+
     ---------------------------------------------------------------------------
     -- Component declaration for the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
     component basic_timer is
         generic (
-            g_NBITS : integer range 0 to 32 := 16  -- Number of bits of the internal counter
+            g_NBITS         : integer range 0 to 32 := 16
         );
         port (
-            i_clock         : in  std_logic;  -- Main clock
-            i_nreset        : in  std_logic;  -- Reset (active LOW)
-            i_tr_tick       : in  std_logic;  -- Time resolution tick (secondary clock)
-            i_enable        : in  std_logic;  -- Timer enable
-            i_load          : in  std_logic;  -- Load the initial value of the timer
-            i_load_value    : in  std_logic_vector((g_NBITS - 1) downto 0);  -- Initial value of the timer
-            o_current_value : out std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the timer
-            o_timeout       : out std_logic   -- Timeout flag
+            i_clock         : in  std_logic;
+            i_nreset        : in  std_logic;
+            i_tr_tick       : in  std_logic;
+            i_enable        : in  std_logic;
+            i_load          : in  std_logic;
+            i_load_value    : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_current_value : out std_logic_vector((g_NBITS - 1) downto 0)
         );
     end component;
 
     ---------------------------------------------------------------------------
     -- UUT signals declaration
     ---------------------------------------------------------------------------
-
+    
     -- Generic
-    constant c_NBITS : integer := 16;   -- Counter bits resolution
+    constant g_NBITS       : integer                                  := 16;
 
     -- Inputs
-    signal i_clock      : std_logic                                := '0';
-    signal i_nreset     : std_logic                                := '1';
-    signal i_tr_tick    : std_logic                                := '0';
-    signal i_enable     : std_logic                                := '0';
-    signal i_load       : std_logic                                := '0';
-    signal i_load_value : std_logic_vector((c_NBITS - 1) downto 0) := (others => '0');
+    signal i_clock         : std_logic                                := '0';
+    signal i_nreset        : std_logic                                := '1';
+    signal i_tr_tick       : std_logic                                := '0';
+    signal i_enable        : std_logic                                := '0';
+    signal i_load          : std_logic                                := '0';
+    signal i_load_value    : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
 
     -- Outputs
-    signal o_current_value : std_logic_vector((c_NBITS - 1) downto 0);
-    signal o_timeout       : std_logic;
+    signal o_current_value : std_logic_vector((g_NBITS - 1) downto 0);
 
     ---------------------------------------------------------------------------
     -- Testbench signals declaration
     ---------------------------------------------------------------------------
     
     -- Clock
-    constant c_i_clock_period   : time := 20 ns;
-    constant c_i_tr_tick_divisor_value : integer range 0 to 1000 := 50;
+    constant c_i_clock_period          : time                    := 20 ns;
+    constant c_i_tr_tick_divisor_value : integer range 0 to 1000 := 50; -- 20 ns * 50 = 1000 ns = 1 us
+
+    -- Control signal
+    signal tb_timeout    : std_logic;                                                    --Timeout detection signal
+    constant c_all_zeros : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');  -- All zeros constant value
 
 begin
     ---------------------------------------------------------------------------
     -- Instantiate the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
-    UUT: basic_timer --entity work.timer(Behavioral)
+    UUT: entity work.basic_timer(Behavioral)
         generic map (
-            g_NBITS => c_NBITS
+            g_NBITS         => g_NBITS
         )
         port map (
             i_clock         => i_clock,
@@ -96,13 +122,13 @@ begin
             i_enable        => i_enable,
             i_load          => i_load,
             i_load_value    => i_load_value,
-            o_current_value => o_current_value,
-            o_timeout       => o_timeout
+            o_current_value => o_current_value
         );
 
     ---------------------------------------------------------------------------
     -- Clocks generation
     ---------------------------------------------------------------------------
+    
     -- purpose: Main clock generation
     -- type   : combinational
     -- inputs : 
@@ -139,6 +165,10 @@ begin
             
         end if;
     end process p_i_tr_clock_generation;
+    
+    -----------------------------------------------------------------------------
+    -- Processes
+    -----------------------------------------------------------------------------
 
     -- purpose: Set the signals to generate the stimuli
     -- type   : combinational
@@ -162,7 +192,7 @@ begin
         -- Load a value
         for v_load_val in 1 to 100 loop
             -- Set the input value to be load
-            i_load_value <= std_logic_vector(to_unsigned(v_load_val, c_NBITS));
+            i_load_value <= std_logic_vector(to_unsigned(v_load_val, g_NBITS));
 
             -- Set load signal HIGH for a clock cycle
             i_load <= '1';
@@ -176,7 +206,7 @@ begin
             i_enable <= '1';
 
             -- Keep enable HIGH until the timeout flag changes to HIGH
-            wait until o_timeout = '1';
+            wait until tb_timeout = '1';
 
             -- Disable the timer
             i_enable <= '0';
@@ -210,4 +240,26 @@ begin
         
     end process p_non_negative_output_checking;
     
-end Behavioral;
+    -- purpose: Timer timeout detection i.e. zero detection
+    -- type   : combinational
+    -- inputs : o_current_value
+    -- outputs: tb_timeout
+    p_tb_timeout_detection : process (o_current_value)
+    begin  -- process p_tb_timeout_detection
+        if (o_current_value = c_all_zeros) then
+            tb_timeout <= '1';
+        else
+            tb_timeout <= '0';
+        end if;
+    end process p_tb_timeout_detection;
+    
+end architecture Behavioral;
+
+-------------------------------------------------------------------------------
+
+configuration basic_timer_tb_Behavioral_cfg of basic_timer_tb is
+    for Behavioral
+    end for;
+end basic_timer_tb_Behavioral_cfg;
+
+-------------------------------------------------------------------------------

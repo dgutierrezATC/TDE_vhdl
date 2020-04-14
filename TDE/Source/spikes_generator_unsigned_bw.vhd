@@ -1,12 +1,33 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
--- Title      : TDE project
--- Project    : 
+-- Title      : spikes_generator_unsigned_bw
+-- Project    : TDE_vhdl
 -------------------------------------------------------------------------------
 -- File       : spikes_generator_unsigned_bw.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
 -- Created    : 2020-01-20
--- Last update: 2020-01-20
+-- Last update: 2020-04-14
 -- Platform   : 
 -- Standard   : VHDL'93/02
 -------------------------------------------------------------------------------
@@ -32,17 +53,18 @@ use ieee.numeric_std.all;
 -------------------------------------------------------------------------------
 entity spikes_generator_unsigned_bw is
     generic (
-        g_NBITS_DATA    : integer range 0 to 32 := 19;
-        g_NBITS_FREQDIV : integer range 0 to 32 := 16
-        );
+        g_NBITS_DATA         : integer range 0 to 32 := 16;                           -- Number of bits of the internal counter
+        g_METHOD             : integer range 0 to 1  := 0;                            -- Spike generation method: 0--> Bitwise, 1-->modulus
+        g_TWO_POW_NBITS_DATA : integer               := 65536                         -- 2^g_NBITS
+    );
     port (
-        i_clock           : in  std_logic;
-        i_nreset          : in  std_logic;
-        i_genfreq_divisor : in  std_logic_vector((g_NBITS_FREQDIV - 1) downto 0);
-        i_data_in         : in  std_logic_vector((g_NBITS_DATA-1) downto 0);
-        i_write           : in  std_logic;
-        i_clear           : in  std_logic;
-        o_spike_out       : out std_logic
+        i_clock              : in  std_logic;                                         -- Main clock
+        i_nreset             : in  std_logic;                                         -- Asynchronous reset (active low)
+        i_genfreq_divisor    : in  std_logic_vector((g_NBITS_DATA - 1) downto 0);     -- Clock frequency divisor value
+        i_data_in            : in  std_logic_vector((g_NBITS_DATA-1) downto 0);       -- Data to convert to spikes
+        i_write              : in  std_logic;                                         -- Signal to capture the input data value
+        i_clear              : in  std_logic;                                         -- Signal to clear the internal registers
+        o_spike_out          : out std_logic                                          -- Output spike signal
         );
 end spikes_generator_unsigned_bw;
 
@@ -55,7 +77,9 @@ architecture Behavioral of spikes_generator_unsigned_bw is
     -- Signals declaration
     ---------------------------------------------------------------------------
     signal r_cicle           : std_logic_vector(g_NBITS_DATA-1 downto 0);
-    signal w_cicle_wise      : std_logic_vector(g_NBITS_DATA-1 downto 0);
+    signal w_cicle_processed      : std_logic_vector(g_NBITS_DATA-1 downto 0);
+    
+    signal w_mult_result : integer;
     
     signal r_value_to_generate : std_logic_vector(g_NBITS_DATA-1 downto 0);
 
@@ -66,10 +90,14 @@ architecture Behavioral of spikes_generator_unsigned_bw is
 
 begin
 
+    -----------------------------------------------------------------------------
+    -- Processes
+    -----------------------------------------------------------------------------
+    
     -- purpose: spikes generator clock divider generation
     -- type   : sequential
     -- inputs : i_clock, i_nreset
-    -- outputs: r_ce
+    -- outputs: w_tick
     p_clock_divider: process (i_nreset, i_clock)
         variable v_tick_counter : integer := 0;  -- internal counter variable
     begin  -- process p_clock_divider
@@ -96,7 +124,7 @@ begin
     -- purpose: spikes generator clock divider generation
     -- type   : sequential
     -- inputs : i_clock, i_nreset
-    -- outputs: r_ce
+    -- outputs: r_cicle
     p_slices_counter: process (i_nreset, i_clock)
     begin  -- process p_slices_counter
         if (i_nreset = '0') then          -- asynchronous reset (active low)
@@ -112,16 +140,6 @@ begin
         end if;
     end process p_slices_counter;
     
-    -- purpose: bitwise operation
-    -- type   : combinational
-    -- inputs : r_cicle, 
-    -- outputs: w_cicle_wise
-    p_bitwise_operation: process(r_cicle)
-    begin
-        for i in 0 to (g_NBITS_DATA-1) loop
-            w_cicle_wise(g_NBITS_DATA-1-i) <= r_cicle(i);
-        end loop;
-    end process p_bitwise_operation;
     
     -- purpose: store the value to be generated
     -- type   : sequential
@@ -140,14 +158,49 @@ begin
         end if;
     end process p_store_value_to_generate;
     
+    gen_modulus_method_generation: if g_METHOD = 1 generate
+        -- purpose: A*B calculation
+        -- type   : combinational
+        -- inputs : r_value_to_generate, r_cicle
+        -- outputs: w_mult_result
+        p_generate_condition: process(r_value_to_generate, r_cicle)
+        begin
+            w_mult_result <= conv_integer(r_cicle) * conv_integer(r_value_to_generate);
+        end process;
+        
+        -- purpose: a mod B calculation
+        -- type   : combinational
+        -- inputs : w_mult_result
+        -- outputs: w_cicle_processed
+        p_modulo_operation: process(w_mult_result)
+            variable v_res : integer := 0;
+        begin
+            v_res := w_mult_result mod g_TWO_POW_NBITS_DATA;
+            w_cicle_processed <= std_logic_vector(to_unsigned(v_res, w_cicle_processed'length));
+        end process;
+    end generate gen_modulus_method_generation;
+    
+    
+    gen_bitwise_method_generation: if g_METHOD = 0 generate
+        -- purpose: bitwise operation
+        -- type   : combinational
+        -- inputs : r_cicle, 
+        -- outputs: w_cicle_processed
+        p_bitwise_operation: process(r_cicle)
+        begin
+            for i in 0 to (g_NBITS_DATA-1) loop
+                w_cicle_processed(g_NBITS_DATA-1-i) <= r_cicle(i);
+            end loop;
+        end process p_bitwise_operation;
+    end generate gen_bitwise_method_generation;
+    
     -- purpose: A > B detection
     -- type   : combinational
-    -- inputs : r_value_to_generate, w_cicle_wise
+    -- inputs : r_value_to_generate, w_cicle_processed
     -- outputs: w_generate
-    p_generate_condition: process(r_value_to_generate, w_cicle_wise, r_cicle)
-    begin --2**g_NBITS_DATA
-        if (((conv_integer(r_cicle) * conv_integer(r_value_to_generate)) mod 65536) < conv_integer(r_value_to_generate)) then -- Spike generator â€œModulusï¿½? Exhaustive Method Implementation
-        --if (conv_integer(r_value_to_generate) > conv_integer(w_cicle_wise)) then
+    p_generate_condition: process(r_value_to_generate, w_cicle_processed)
+    begin 
+        if (conv_integer(r_value_to_generate) > conv_integer(w_cicle_processed)) then
             w_generate <= '1';
         else
             w_generate <= '0';

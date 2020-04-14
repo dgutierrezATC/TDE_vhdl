@@ -45,17 +45,18 @@ architecture Behavioral of spikes_generator_unsigned_bw_tb is
     -------------------------------------------------------------------------------
     component spikes_generator_unsigned_bw is
         generic (
-            g_NBITS_DATA    : integer range 0 to 32 := 16;
-            g_NBITS_FREQDIV : integer range 0 to 32 := 16
+            g_NBITS_DATA         : integer range 0 to 32 := 16;
+            g_METHOD             : integer range 0 to 1  := 0;
+            g_TWO_POW_NBITS_DATA : integer               := 65536
         );
         port (
-            i_clock           : in  std_logic;
-            i_nreset          : in  std_logic;
-            i_genfreq_divisor : in  std_logic_vector((g_NBITS_FREQDIV - 1) downto 0);
-            i_data_in         : in  std_logic_vector((g_NBITS_DATA-1) downto 0);
-            i_write           : in  std_logic;
-            i_clear           : in  std_logic;
-            o_spike_out       : out std_logic
+            i_clock              : in  std_logic;
+            i_nreset             : in  std_logic;
+            i_genfreq_divisor    : in  std_logic_vector((g_NBITS_DATA - 1) downto 0);
+            i_data_in            : in  std_logic_vector((g_NBITS_DATA-1) downto 0);
+            i_write              : in  std_logic;
+            i_clear              : in  std_logic;
+            o_spike_out          : out std_logic
         );
     end component spikes_generator_unsigned_bw;
 
@@ -64,26 +65,27 @@ architecture Behavioral of spikes_generator_unsigned_bw_tb is
     ---------------------------------------------------------------------------
 
     -- component generics
-    constant g_NBITS_DATA    : integer range 0 to 32 := 16;
-    constant g_NBITS_FREQDIV : integer range 0 to 32 := 16;
+    constant g_NBITS_DATA         : integer range 0 to 32                    := 16;
+    constant g_METHOD             : integer range 0 to 1                     := 0;
+    constant g_TWO_POW_NBITS_DATA : integer                                  := 65536;
 
     -- component input ports
-    signal i_clock           : std_logic := '0';
-    signal i_nreset          : std_logic := '0';
-    signal i_genfreq_divisor : std_logic_vector((g_NBITS_FREQDIV - 1) downto 0) := (others => '0');
-    signal i_data_in         : std_logic_vector((g_NBITS_DATA-1) downto 0)      := (others => '0');
-    signal i_write           : std_logic := '0';
-    signal i_clear           : std_logic := '0';
+    signal i_clock           : std_logic                                     := '0';
+    signal i_nreset          : std_logic                                     := '0';
+    signal i_genfreq_divisor : std_logic_vector((g_NBITS_DATA - 1) downto 0) := (others => '0');
+    signal i_data_in         : std_logic_vector((g_NBITS_DATA-1) downto 0)   := (others => '0');
+    signal i_write           : std_logic                                     := '0';
+    signal i_clear           : std_logic                                     := '0';
 
     -- component output ports
     signal o_spike_out       : std_logic;
 
-    -- clock
-    constant c_i_clock_period : time := 20 ns;
-
     ---------------------------------------------------------------------------
     -- Testbench signals declaration
     ---------------------------------------------------------------------------
+    
+    -- Clcok
+    constant c_i_clock_period : time := 20 ns;
 
     -- Saving out results in a file
     signal tb_end_of_simulation : std_logic := '0'; --Flag to indicate the end of the simulation
@@ -95,10 +97,11 @@ begin  -- architecture Behavioral
     ---------------------------------------------------------------------------
     -- DUT instantiation
     ---------------------------------------------------------------------------
-    DUT: entity work.spikes_generator_unsigned_bw
+    UUT: entity work.spikes_generator_unsigned_bw(Behavioral)
         generic map (
-            g_NBITS_DATA    => g_NBITS_DATA,
-            g_NBITS_FREQDIV => g_NBITS_FREQDIV
+            g_NBITS_DATA         => g_NBITS_DATA,
+            g_METHOD             => g_METHOD,
+            g_TWO_POW_NBITS_DATA => g_TWO_POW_NBITS_DATA
         )
         port map (
             i_clock           => i_clock,
@@ -116,10 +119,14 @@ begin  -- architecture Behavioral
     i_clock <= not i_clock after c_i_clock_period/2;
 
     ---------------------------------------------------------------------------
-    -- Stimuli
+    -- Processes
     ---------------------------------------------------------------------------
-    -- waveform generation
-    WaveGen_Proc: process
+    
+    -- purpose: Set the signals to generate the stimuli
+    -- type   : combinational
+    -- inputs : 
+    -- outputs: 
+    p_stimuli: process
         variable v_ramp_signal_value : std_logic_vector((g_NBITS_DATA-1) downto 0) := (others => '0');
     begin
         -- insert signal assignments here
@@ -209,7 +216,7 @@ begin  -- architecture Behavioral
         wait for 5 ms;
 
         wait;
-    end process WaveGen_Proc;
+    end process p_stimuli;
     
     -- purpose: Saving out the inputa data value
     -- type   : sequential

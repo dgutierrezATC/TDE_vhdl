@@ -1,10 +1,31 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "subtractor"
--- Project    : 
+-- Project    : TDE_vhdl
 -------------------------------------------------------------------------------
 -- File       : subtractor_tb.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
 -- Created    : 2020-01-21
 -- Last update: 2020-01-21
 -- Platform   : 
@@ -39,11 +60,11 @@ end entity subtractor_tb;
 architecture Behavioral of subtractor_tb is
 
     ---------------------------------------------------------------------------
-    -- UUT component declaration
+    -- Component declaration for the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
     component subtractor is
         generic (
-            g_NBITS : integer range 0 to 32 := 16
+            g_NBITS        : integer range 0 to 32 := 16
         );
         port (
             i_input_data_a : in  std_logic_vector((g_NBITS - 1) downto 0);
@@ -57,7 +78,7 @@ architecture Behavioral of subtractor_tb is
     ---------------------------------------------------------------------------
     
     -- component generics
-    constant g_NBITS : integer range 0 to 32 := 16;
+    constant g_NBITS      : integer range 0 to 32                    := 16;
 
     -- component input ports
     signal i_input_data_a : std_logic_vector((g_NBITS - 1) downto 0) := (others => '0');
@@ -65,16 +86,19 @@ architecture Behavioral of subtractor_tb is
 
     -- component output ports
     signal o_output_data  : std_logic_vector((g_NBITS - 1) downto 0);
+    
+    ---------------------------------------------------------------------------
+    -- Testbench signals declaration
+    ---------------------------------------------------------------------------
 
 begin  -- architecture Behavioral
 
     ---------------------------------------------------------------------------
-    -- UUT instantiation
+    -- Instantiate the Unit Under Test (UUT)
     ---------------------------------------------------------------------------
-    -- component instantiation
-    DUT: entity work.subtractor
+    UUT: entity work.subtractor(Behavioral)
         generic map (
-            g_NBITS => g_NBITS
+            g_NBITS        => g_NBITS
         )
         port map (
             i_input_data_a => i_input_data_a,
@@ -82,8 +106,15 @@ begin  -- architecture Behavioral
             o_output_data  => o_output_data
         );
 
-    -- waveform generation
-    WaveGen_Proc: process
+    -----------------------------------------------------------------------------
+    -- Processes
+    -----------------------------------------------------------------------------
+
+    -- purpose: Set the signals to generate the stimuli
+    -- type   : combinational
+    -- inputs : 
+    -- outputs: 
+    p_stimuli: process
     begin
         -- insert signal assignments here
 
@@ -182,7 +213,7 @@ begin  -- architecture Behavioral
         
 
         wait;
-    end process WaveGen_Proc;
+    end process p_stimuli;
 
     
 

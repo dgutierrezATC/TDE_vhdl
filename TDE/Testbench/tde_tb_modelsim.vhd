@@ -1,10 +1,31 @@
+--/////////////////////////////////////////////////////////////////////////////////
+--//                                                                             //
+--//    Copyright � 2020  Daniel Gutierrez-Galan                                 //
+--//                                                                             //
+--//    This file is part of the TDE_vhdl project.                               //
+--//                                                                             //
+--//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+--//    it under the terms of the GNU General Public License as published by     //
+--//    the Free Software Foundation, either version 3 of the License, or        //
+--//    (at your option) any later version.                                      //
+--//                                                                             //
+--//    THE_vhdl is distributed in the hope that it will be useful,              //
+--//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+--//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+--//    GNU General Public License for more details.                             //
+--//                                                                             //
+--//    You should have received a copy of the GNU General Public License        //
+--//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+--//                                                                             //
+--/////////////////////////////////////////////////////////////////////////////////
+
 -------------------------------------------------------------------------------
 -- Title      : Testbench for design "tde"
 -- Project    : 
 -------------------------------------------------------------------------------
--- File       : tde_tb.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- File       : tde_tb_modelsim.vhd
+-- Author     : Daniel Gutierrez-Galan (dgutierrez@atc.us.es)
+-- Company    : University of Seville
 -- Created    : 2020-01-22
 -- Last update: 2020-02-06
 -- Platform   : 
@@ -48,19 +69,24 @@ architecture Behavioral of tde_tb is
     -------------------------------------------------------------------------------
     component tde is
         generic (
-            g_NBITS     : integer range 0 to 32 := 16;
-            g_LOG2NBITS : integer range 0 to 5  := 4
+            g_NBITS              : integer range 0 to 32         := 16;
+			g_LOG2NBITS          : integer range 0 to 5          := 4;
+			g_SPIKEGEN_METHOD    : integer range 0 to 1          := 0;
+			g_TWO_POW_NBITS_DATA : integer                       := 65536 
         );
         port (
-            i_clock          : in  std_logic;
-            i_nreset         : in  std_logic;
-            i_tr_tick        : in  std_logic;
-            i_facilitatory   : in  std_logic;
-            i_trigger        : in  std_logic;
-            i_weight         : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
-            i_decay          : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
-            i_detection_time : in  std_logic_vector((g_NBITS - 1) downto 0);
-            o_output_spike   : out std_logic
+            i_clock              : in  std_logic;
+            i_nreset             : in  std_logic;
+            i_tr_tick            : in  std_logic;
+            i_facilitatory       : in  std_logic;
+			i_trigger            : in  std_logic;
+			i_tau                : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
+            i_weight             : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
+            i_decay              : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
+			i_detection_time     : in  std_logic_vector((g_NBITS - 1) downto 0);
+			i_faci_sat_value     : in  std_logic_vector((g_NBITS - 1) downto 0);
+        	i_trig_sat_value     : in  std_logic_vector((g_NBITS - 1) downto 0);
+            o_output_spike       : out std_logic
         );
     end component tde;
 
@@ -69,53 +95,70 @@ architecture Behavioral of tde_tb is
     ---------------------------------------------------------------------------
  
     -- component generics
-    constant g_NBITS     : integer range 0 to 32 := 16;
-    constant g_LOG2NBITS : integer range 0 to 5  := 4;
+    constant g_NBITS              : integer range 0 to 32         := 16;
+	constant g_LOG2NBITS          : integer range 0 to 5          := 4;
+	constant g_SPIKEGEN_METHOD    : integer range 0 to 1          := 1;
+    constant g_TWO_POW_NBITS_DATA : integer                       := 65536;
 
     -- component input ports
     signal i_clock          : std_logic := '0';
     signal i_nreset         : std_logic := '0';
     signal i_tr_tick        : std_logic := '0';
     signal i_facilitatory   : std_logic := '0';
-    signal i_trigger        : std_logic := '0';
+	signal i_trigger        : std_logic := '0';
+	signal i_tau            : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
     signal i_weight         : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
     signal i_decay          : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
-    signal i_detection_time : std_logic_vector((g_NBITS - 1) downto 0)     := (others => '0');
+	signal i_detection_time : std_logic_vector((g_NBITS - 1) downto 0)     := (others => '0');
+	signal i_faci_sat_value : std_logic_vector((g_NBITS - 1) downto 0)     := (others => '0');
+	signal i_trig_sat_value : std_logic_vector((g_NBITS - 1) downto 0)     := (others => '0');
 
     -- component output ports
     signal o_output_spike   : std_logic;
 
-    -- clock
-    constant c_i_clock_period : time := 20 ns; -- 50 MHz clock
-
     ---------------------------------------------------------------------------
     -- Testbench signals declaration
     ---------------------------------------------------------------------------
+	
+	-- Clock
+	constant c_i_clock_period : time := 20 ns; -- 50 MHz clock
+	
 	-- Simulator options: CHECK BEFORE RUN!
 	constant c_is_ModelSim : boolean := true; -- If true, ModelSIM should be used. If false, VivadoSim should be used.
 	constant c_absolute_path : string := "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Testbench/Results/Files/"; -- Absolute path to the testbench files
 	
     -- Clock divisor value
-    constant c_i_tr_tick_divisor_value : integer range 0 to 100 := 50;  -- Clock divisor value
+    constant c_i_tr_tick_divisor_value : integer range 0 to 100 := 50;  -- Clock divisor value: 20ns * 50 = 1000 ns = 1us
 
     -- Saving results in a file
     signal tb_end_of_simulation : std_logic := '0'; -- Flag to indicate the end of the simulation
     
-    file f_faci_spike : text open write_mode is c_absolute_path & "input_faci_spikes.txt";  -- Input facilitatory spikes
-    file f_trig_spike : text open write_mode is c_absolute_path & "input_trig_spikes.txt";  -- Input trigger spikes
-    file f_out_spikes : text open write_mode is c_absolute_path & "output_spikes.txt";  -- Output spikes from the TDE model
+    file f_faci_spike : text open write_mode is c_absolute_path & "input_faci_spikes.txt";  -- Input facilitatory spikes filename
+    file f_trig_spike : text open write_mode is c_absolute_path & "input_trig_spikes.txt";  -- Input trigger spikes filename
+    file f_out_spikes : text open write_mode is c_absolute_path & "output_spikes.txt";      -- Output spikes from the TDE model filename
 	
 	-- Saving results of the delta_t variation test in a file
-	file f_out_spikes_delta_t : text open write_mode is c_absolute_path & "output_spikes_delta_t.txt";  -- Output spikes from the TDE model
+	file f_out_spikes_delta_t        : text open write_mode is c_absolute_path & "output_spikes_delta_t.txt";  -- Output spikes from the TDE model
 	file f_out_spikes_global_delta_t : text;
 	file f_out_spikes_tunning_curves : text;
 	
 	-- Test to run
-	constant c_basic_behavioral_test : boolean := true; -- If true, TDE behavioral test with basic cases will be launched
-	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "10000000";
-	constant c_delta_t_variation_test : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
-	constant c_global_delta_t_variation_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE detec time will be launched
-	constant c_tunning_curves_test : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
+	
+	-- Cases for the TDE: config: tau --> 0, weight --> 4, decay --> 2, detection_time --> 700 us
+	-- Case 0: 1 facilitatory
+	-- Case 1: 1 trigger
+	-- Case 2: 1 trigger and 1 facilitatory
+	-- Case 3: 1 facilitatory and 1 trigger after 710 us
+	-- Case 4: 1 facilitatory and 1 trigger after 10 us
+	-- Case 5: 1 facilitatory and 1 trigger after 600 us
+	-- Case 6: 1 facilitatory and 1 trigger after 100 us and another after (100+) 300 us
+	-- Case 7: 1 facilitatory and 1 facilitatory after 100 us and 1 trigger after (100+) 300 us
+	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "11111111";  --Set to '1' to activate: 0 LSB, 7 MSB
+	
+	constant c_basic_behavioral_test                 : boolean := true;  -- If true, TDE behavioral test with basic cases will be launched
+	constant c_delta_t_variation_test                : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
+	constant c_global_delta_t_variation_test         : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE detec time will be launched
+	constant c_tunning_curves_test                   : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
 	
 	
 	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
@@ -153,26 +196,65 @@ architecture Behavioral of tde_tb is
 	
 begin  -- architecture Behavioral
 
+	---------------------------------------------------------------------------
+    -- Instantiate the Unit Under Test (UUT)
+	---------------------------------------------------------------------------
+	
     -- component instantiation
     DUT: entity work.tde
         generic map (
-            g_NBITS     => g_NBITS,
-            g_LOG2NBITS => g_LOG2NBITS
+            g_NBITS              => g_NBITS,
+			g_LOG2NBITS          => g_LOG2NBITS,
+			g_SPIKEGEN_METHOD    => g_SPIKEGEN_METHOD,
+			g_TWO_POW_NBITS_DATA => g_TWO_POW_NBITS_DATA
         )
         port map (
-            i_clock          => i_clock,
-            i_nreset         => i_nreset,
-            i_tr_tick        => i_tr_tick,
-            i_facilitatory   => i_facilitatory,
-            i_trigger        => i_trigger,
-            i_weight         => i_weight,
-            i_decay          => i_decay,
-            i_detection_time => i_detection_time,
-            o_output_spike   => o_output_spike
+            i_clock              => i_clock,
+            i_nreset             => i_nreset,
+            i_tr_tick            => i_tr_tick,
+            i_facilitatory       => i_facilitatory,
+			i_trigger            => i_trigger,
+			i_tau                => i_tau,
+            i_weight             => i_weight,
+            i_decay              => i_decay,
+			i_detection_time     => i_detection_time,
+			i_faci_sat_value     => i_faci_sat_value,
+			i_trig_sat_value     => i_trig_sat_value,
+            o_output_spike       => o_output_spike
         );
 
-    -- clock generation
+	---------------------------------------------------------------------------
+    -- Clocks generation
+    ---------------------------------------------------------------------------
 	i_clock <= not i_clock after c_i_clock_period/2;
+
+	-- purpose: i_tr_tick clock generation
+    -- type   : sequential
+    -- inputs : i_clock, i_nreset
+    -- outputs: i_tr_tick
+    p_countdown: process (i_nreset, i_clock)
+        variable v_tr_tick_counter : integer range 0 to c_i_tr_tick_divisor_value := 0;  -- internal counter variable
+    begin  -- process p_countdown
+        if (i_nreset = '0') then          -- asynchronous reset (active low)
+            v_tr_tick_counter := 0;
+            i_tr_tick <= '0';
+        elsif (i_clock'event and i_clock = '1') then  -- rising clock edge
+            v_tr_tick_counter := v_tr_tick_counter + 1;
+            if (v_tr_tick_counter = c_i_tr_tick_divisor_value) then
+                v_tr_tick_counter := 0;
+                i_tr_tick <= '1';
+            else
+                i_tr_tick <= '0';
+            end if;
+        else
+            
+        end if;
+        
+	end process p_countdown;
+	
+	---------------------------------------------------------------------------
+    -- Behavioral processes
+    ---------------------------------------------------------------------------
 	
 	g_tunning_curves_test : if c_tunning_curves_test = true generate
 		-- purpose: process for generating the response of multiple TDE configs over different delta_t values
@@ -579,9 +661,12 @@ begin  -- architecture Behavioral
 			--
 
 			-- Set all the parameters
-			i_weight <= x"1";
-			i_decay  <= x"2";
+			i_tau            <= x"0";
+			i_weight         <= x"4";
+			i_decay          <= x"2";
 			i_detection_time <= x"02BC";
+			i_faci_sat_value <= x"02BE";
+			i_trig_sat_value <= x"02BE";
 
 			-- Wait
 			wait for 1 us;
@@ -612,6 +697,33 @@ begin  -- architecture Behavioral
 				i_facilitatory <= '1';
 				wait for c_i_clock_period;
 				i_facilitatory <= '0';
+
+				-------------------------
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
+
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
+
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
+
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
+
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
+				-------------------------
 
 				-- Wait for 710 us
 				wait for 710 us;
@@ -890,29 +1002,9 @@ begin  -- architecture Behavioral
 		end process p_basic_cases_test;
 	end generate g_basic_cases_test;
 
-    -- purpose: i_tr_tick clock generation
-    -- type   : sequential
-    -- inputs : i_clock, i_nreset
-    -- outputs: i_tr_tick
-    p_countdown: process (i_nreset, i_clock)
-        variable v_tr_tick_counter : integer range 0 to c_i_tr_tick_divisor_value := 0;  -- internal counter variable
-    begin  -- process p_countdown
-        if (i_nreset = '0') then          -- asynchronous reset (active low)
-            v_tr_tick_counter := 0;
-            i_tr_tick <= '0';
-        elsif (i_clock'event and i_clock = '1') then  -- rising clock edge
-            v_tr_tick_counter := v_tr_tick_counter + 1;
-            if (v_tr_tick_counter = c_i_tr_tick_divisor_value) then
-                v_tr_tick_counter := 0;
-                i_tr_tick <= '1';
-            else
-                i_tr_tick <= '0';
-            end if;
-        else
-            
-        end if;
-        
-    end process p_countdown;
+	---------------------------------------------------------------------------
+    -- Saving out results processes
+    ---------------------------------------------------------------------------
 
 	-- purpose: Saving out the facilitatory input spikes
     -- type   : sequential
@@ -1211,7 +1303,7 @@ begin  -- architecture Behavioral
 	
 	--**************************************************************************
 	---------------------------------------------------------------------------*
-    -- ONLY IN MODELSIM                                                        *
+    -- ONLY IN MODELSIM: spy signals configuration                             *
     ---------------------------------------------------------------------------*
 	--**************************************************************************
 	g_modelSim_gen: if c_is_ModelSim = true generate
@@ -1257,7 +1349,7 @@ begin  -- architecture Behavioral
 		---------------------------------------------------------------------------
 		p_spying_facilitation_timer_value_weighted: process
 		begin
-			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_facilitatory_timer_value_weighted", 1);
+			init_signal_spy("/tde_tb/DUT/w_facilitation_timer_value_weighted","/spy_facilitatory_timer_value_weighted", 1);
 			wait;
 		end process p_spying_facilitation_timer_value_weighted;
 		
@@ -1368,8 +1460,8 @@ begin  -- architecture Behavioral
         ---------------------------------------------------------------------------
 		p_spying_sgen_val_to_generate: process
 		begin
-			--init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
-			init_signal_spy("/tde_tb/DUT/w_sgen_val2gen_feedback","/spy_spikegen_val2gen", 1);
+			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			--init_signal_spy("/tde_tb/DUT/w_sgen_val2gen_feedback","/spy_spikegen_val2gen", 1);
 			wait;
 		end process p_spying_sgen_val_to_generate;
 
