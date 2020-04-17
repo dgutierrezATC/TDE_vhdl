@@ -35,12 +35,24 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 </p>
 
 <p align="center">
+<img align="center" src="https://github.com/dgutierrezATC/TDE_vhdl/blob/master/TDE/Documentation/Wiki/Wiki_images/Fig_TDE_IP_module.png" alt="TDE VHDL architecture">
+</p>
+
+<p align="justify">
+The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+</p>
+
+<p align="center">
 <img align="center" src="https://github.com/dgutierrezATC/TDE_vhdl/blob/master/TDE/Documentation/Wiki/Wiki_images/Fig_TDE_vhdl_block_diagram.png" alt="TDE VHDL architecture">
 </p>
 
 <h2 name="Behavior_overview">Behavior overview</h2>
 <p align="justify">
 Brief explanation about how the TDE works.
+</p>
+
+<p align="center">
+<img align="center" src="https://github.com/dgutierrezATC/TDE_vhdl/blob/master/TDE/Documentation/Wiki/Wiki_images/Fig_TDE_module_operation_example.png" alt="TDE VHDL architecture">
 </p>
 
 <h2 name="Key_features">Key features</h2>
