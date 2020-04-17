@@ -51,6 +51,10 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 Brief explanation about how the TDE works.
 </p>
 
+<p align="center">
+<img align="center" src="https://github.com/dgutierrezATC/TDE_vhdl/blob/master/TDE/Documentation/Wiki/Wiki_images/Fig_TDE_module_operation_example.png" alt="TDE VHDL architecture">
+</p>
+
 <h2 name="Key_features">Key features</h2>
 <p align="justify">
 Next, we summarize the main features of the TDE digital implementation:
