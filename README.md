@@ -31,7 +31,7 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 
 <h2 name="Digital_model">Digital implementation</h2>
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+IP block overview.
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@ The Time Difference Encoder (TDE) is a model which encodes the relative timing b
 </p>
 
 <p align="justify">
-The Time Difference Encoder (TDE) is a model which encodes the relative timing between two events into a burst of spikes.
+Block diagram of the proposed model.
 </p>
 
 <p align="center">
