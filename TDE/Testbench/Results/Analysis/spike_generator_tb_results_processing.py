@@ -152,12 +152,12 @@ fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
 # Plotting the facilitatory and trigger spikes
 ax1.plot(all_timestamps[0], all_values[0], 'y.-')
 # Plotting the facilitatory timer value
-ax1.plot(all_timestamps[1], np.zeros_like(all_values[1]), 'c|', markersize=10)
+ax1.plot(all_timestamps[1], np.zeros_like(all_values[1]), 'g|', markersize=10)
 ax1.set_ylabel('d_in value')
 #
 ax2.plot(all_timestamps[0], all_values[0], 'm.-')
 # Plotting the trigger timer value
-ax2.plot(all_timestamps[3], np.zeros_like(all_values[3]), 'c|', markersize=10)
+ax2.plot(all_timestamps[3], np.zeros_like(all_values[3]), 'g|', markersize=10)
 ax2.set_ylabel('clk_div value')
 
 ax2.set_xlabel('time (ms)')
