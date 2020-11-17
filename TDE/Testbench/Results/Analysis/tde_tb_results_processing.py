@@ -25,6 +25,13 @@ import math
 import enum
 import numpy as np
 import random
+import svgutils.transform as sg
+from svgutils.compose import *
+from svgutils.transform import from_mpl
+from svgutils.transform import fromfile
+from svgutils.templates import VerticalLayout, ColumnLayout
+import svg_stack as ss
+from sklearn.metrics import mean_squared_error, r2_score
 
 #
 # Setting paths and filenames
@@ -59,6 +66,12 @@ tde_output_spikes_delta_t_case_3_filename = source_files_absolute_path + "output
 tde_output_spikes_delta_t_case_4_filename = source_files_absolute_path + "output_spikes_delta_t_case_4.txt"
 tde_output_spikes_delta_t_case_5_filename = source_files_absolute_path + "output_spikes_delta_t_case_5.txt"
 tde_output_spikes_delta_t_case_6_filename = source_files_absolute_path + "output_spikes_delta_t_case_6.txt"
+
+tde_output_spikes_tunning_curve_config_0_filename = source_files_absolute_path + "output_spikes_tunning_curve_config_0.txt"
+tde_output_spikes_tunning_curve_config_1_filename = source_files_absolute_path + "output_spikes_tunning_curve_config_1.txt"
+tde_output_spikes_tunning_curve_config_2_filename = source_files_absolute_path + "output_spikes_tunning_curve_config_2.txt"
+tde_output_spikes_tunning_curve_config_3_filename = source_files_absolute_path + "output_spikes_tunning_curve_config_3.txt"
+
 
 #
 # Main arrays!
@@ -189,50 +202,100 @@ def plotFacilitationBlockOutput(input_spikes_faci_timestamps, input_spikes_faci_
                                 sgen_val2gen_timestamps, sgen_val2gen_values):
 
     # Create the figure and the subplots
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6.4, 3.8))
+    grid = plt.GridSpec(5, 1, left=0.125, bottom=0.120, right=0.940, top=0.880, hspace=0.2)
 
     # Change the figure title
-    fig.suptitle('Gain generator block signals')
-    
-    # Plotting the facilitatory and trigger spikes
-    ax1 = fig.add_subplot(411)
+    fig.suptitle('Gain generator block example')
+
+    # Plotting the facilitatory spikes
+    ax1 = fig.add_subplot(grid[0, :])
     ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
+
     y_labels = ['faci.']
     y_pos = np.arange(len(y_labels))
     ax1.set_yticks(y_pos)
     ax1.set_yticklabels(y_labels)
     plt.setp(ax1.get_xticklabels(), visible=False)
-    # Plotting the facilitatory timer value
-    ax2 = fig.add_subplot(412, sharex=ax1)
-    ax2.plot(faci_timer_timestamps, faci_timer_values, 'r')
-    ax2.set_ylabel('timer_0')
-    plt.setp(ax2.get_xticklabels(), visible=False)
-    # Plotting the trigger timer value
-    ax3 = fig.add_subplot(413, sharex=ax1, sharey=ax2)
-    ax3.plot(faci_timer_weighted_timestamps, faci_timer_weighted_values, 'r')
-    ax3.set_ylabel('shift_1.')
-    plt.setp(ax3.get_xticklabels(), visible=False)
-    # Plotting the spikes generator value to generate
-    ax4 = fig.add_subplot(414, sharex=ax1)
-    ax4.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'r')
-    y_labels = ['0.00']
-    y_pos = np.arange(len(y_labels))
-    ax4.set_yticks(y_pos)
-    ax4.set_yticklabels(y_labels)
-    ax4.set_ylabel('add_0')
-    plt.setp(ax4.get_xticklabels(), visible=True)
     
-    plt.xlabel(r'Time ($\mu$s)')
+    # Plotting the facilitatory timer value
+    ax2 = fig.add_subplot(grid[1:3,:], sharex=ax1) #212
+    ax2.plot(faci_timer_timestamps, faci_timer_values, 'r:', label="timer_0")
+    ax2.plot(faci_timer_weighted_timestamps, faci_timer_weighted_values, 'r--', label="shift_1")
+
+    ax2.set_ylabel('out (uint)')
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    plt.legend(loc='upper right')
+
+    # Plotting the sgen d_in value
+    ax3 = fig.add_subplot(grid[3:,:], sharex=ax1) #212
+    ax3.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'r', label="add_0")
+
+    ax3.set_ylabel('out (uint)')
+    plt.setp(ax3.get_xticklabels(), visible=True)
+
+    # Some options
+    plt.xlabel(r'time ($\mu$s)')
+    plt.legend(loc='center right')
     plt.show()
 
     # Saving out the figure
-    fig.savefig('gain_block_results.png')
-
+    fig.savefig('gain_block_results.pdf')
+"""
 plotFacilitationBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.faci_timer_weighted.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_val.value)], all_values[int(TDE_results_datafiles_order.sgen_val.value)])
+"""
+def plotTriggerBlockOutput(input_spikes_trig_timestamps, input_spikes_trig_values, \
+                            trig_timer_timestamps, trig_timer_values, \
+                            trigg_timer_weighted_timestamps, trigg_timer_weighted_values, \
+                            sgen_clkdiv_timestamps, sgen_clkdiv_values):
+    # Create the figure and the subplots
+    fig = plt.figure(figsize=(6.4, 3.8))
+    grid = plt.GridSpec(5, 1, left=0.125, bottom=0.120, right=0.940, top=0.880, hspace=0.2)
 
+    # Change the figure title
+    fig.suptitle('EPSC generator block example')
+
+    # Plotting the trigger spikes
+    ax1 = fig.add_subplot(grid[0, :]) #121
+    ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=10, label='Facilitatory')
+
+    y_labels = ['trig.']
+    y_pos = np.arange(len(y_labels))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(y_labels)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+
+    # Plotting the trigger timer value
+    ax2 = fig.add_subplot(grid[1:3,:], sharex=ax1) #212
+    ax2.plot(trig_timer_timestamps, trig_timer_values, 'b:', label="timer_1")
+    ax2.plot(trigg_timer_weighted_timestamps, trigg_timer_weighted_values, 'b--', label="shift_2")
+
+    ax2.set_ylabel('out (uint)')
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    plt.legend(loc='upper right')
+
+    # Plotting the sgen clk_div value
+    ax3 = fig.add_subplot(grid[3:, :]) #121
+    ax3.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values, 'b', label="sub_0")
+
+    ax3.set_ylabel('out (uint)')
+    plt.setp(ax3.get_xticklabels(), visible=True)
+
+    plt.xlabel(r'time ($\mu$s)')
+    plt.legend(loc='center right')
+    plt.show()
+
+    # Saving out the figure
+    fig.savefig('epsc_block_results.pdf')
+"""
+plotTriggerBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)])
+"""
 def plotTDEresults(input_spikes_faci_timestamps, input_spikes_faci_values, \
                     input_spikes_trig_timestamps, input_spikes_trig_values, \
                     faci_timer_timestamps, faci_timer_values, \
@@ -275,16 +338,17 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     fig = plt.figure()
 
     # Change the figure title
-    fig.suptitle('TDE results')
+    fig.suptitle('TDE module\'s operation example')
     
     # Plotting the facilitatory and trigger spikes
     ax1 = fig.add_subplot(611)
     #ax1.plot(input_spikes_faci_timestamps, np.full((1, len(input_spikes_faci_values)), 1.0), 'r|', markersize=10, label='Facilitatory')
-    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
+    ax1.plot(input_spikes_faci_timestamps, np.ones(len(input_spikes_faci_values)), 'r|', markersize=10, label='Facilitatory')
     ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=10, label='Trigger')
-    ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=2, mode="expand", frameon=False, borderaxespad=0.)
-    ax1.set_ylabel('Input')
-    y_labels = ['faci.', 'trig.']
+    #ax1.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncol=2, mode="expand", frameon=False, borderaxespad=0.)
+    ax1.set_ylabel('Input', labelpad = 17)
+    ax1.set_ylim([-1, 2])
+    y_labels = ['trig.', 'faci.']
     y_pos = np.arange(len(y_labels))
     ax1.set_yticks(y_pos)
     ax1.set_yticklabels(y_labels)
@@ -293,28 +357,28 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     # Plotting the facilitatory timer value
     ax2 = fig.add_subplot(612, sharex=ax1)
     ax2.plot(faci_timer_timestamps, faci_timer_values, 'r')
-    ax2.set_ylabel('Faci.')
+    ax2.set_ylabel('gain', labelpad = 17)
     plt.setp(ax2.get_xticklabels(), visible=False)
     # Plotting the trigger timer value
     ax3 = fig.add_subplot(613, sharex=ax1, sharey=ax2)
     ax3.plot(trig_timer_timestamps, trig_timer_values, 'b')
-    ax3.set_ylabel('Trig.')
+    ax3.set_ylabel('epsc', labelpad = 17)
     plt.setp(ax3.get_xticklabels(), visible=False)
     # Plotting the spikes generator value to generate
     ax4 = fig.add_subplot(614, sharex=ax1)
-    ax4.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'k')
-    ax4.set_ylabel('Val2s')
+    ax4.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'y', label='d_in')
+    ax4.set_ylabel('d_in', labelpad = 5)
     plt.setp(ax4.get_xticklabels(), visible=False)
     # Plotting the spikes generator clock frequency divider
     ax5 = fig.add_subplot(615, sharex=ax1)
-    ax5.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values, 'k')
-    ax5.set_ylabel('clkdiv')
+    ax5.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values, 'm', label='clk_div')
+    ax5.set_ylabel('clk_div', labelpad = 10)
     plt.setp(ax5.get_xticklabels(), visible=False)
     # Plotting the output spikes
     ax6 = fig.add_subplot(616, sharex=ax1)
-    ax6.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), '|', markersize=10)
-    ax6.set_ylabel('Output')
-    y_label = ['TDE']
+    ax6.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), 'g|', markersize=10, label='Spike')
+    ax6.set_ylabel('Output', labelpad = 10)
+    y_label = ['spike']
     y_pos = np.arange(len(y_label))
     ax6.set_yticks(y_pos)
     ax6.set_yticklabels(y_label)
@@ -324,18 +388,137 @@ def plotTDEresults2(input_spikes_faci_timestamps, input_spikes_faci_values, \
     #plt.setp(ax6.get_yticklabels(), visible=False)
     # Show the figure
     plt.xlabel(r'Time ($\mu$s)')
+    plt.subplots_adjust(top=0.930, bottom=0.090, left=0.150, right=0.935, hspace=0.200, wspace=0.200)
     plt.show()
 
     # Saving out the figure
     fig.savefig('tde_results.png')
+    fig.savefig('Fig_TDE_module_operation_example.pdf')
 
-plotTDEresults2(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
+"""plotTDEresults2(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_val.value)], all_values[int(TDE_results_datafiles_order.sgen_val.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)], \
-                all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])
+                all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])"""
+
+
+def plotTDEresults2_compact(input_spikes_faci_timestamps, input_spikes_faci_values, \
+                    input_spikes_trig_timestamps, input_spikes_trig_values, \
+                    faci_timer_timestamps, faci_timer_values, \
+                    trig_timer_timestamps, trig_timer_values, \
+                    output_spikes_timestamps, output_spikes_values):
+
+    # Create the figure and the subplots
+    fig = plt.figure(figsize=(4.6, 2.03))
+    grid = plt.GridSpec(4, 1, left=0.150, bottom=0.110, right=0.95, top=0.910, hspace=0.1)
+
+    # Change the figure title
+    fig.suptitle(r'(F) Single facilitatory, single trigger low $\Delta$t')
+
+    # Plotting the trigger spikes
+    ax1 = fig.add_subplot(grid[0, :]) #121
+    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=15, label='Facilitatory')
+    ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=15, label='Facilitatory')
+
+    y_labels = ['input']
+    y_pos = np.arange(len(y_labels))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(y_labels)
+    ax1.spines["top"].set_visible(False)
+    ax1.spines["right"].set_visible(False)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+
+    # Plotting the trigger timer value
+    ax2 = fig.add_subplot(grid[1:3,:], sharex=ax1) #212
+    ax2.plot(faci_timer_timestamps, faci_timer_values, 'r-')
+    ax2.plot(trig_timer_timestamps, trig_timer_values, 'b:')
+
+    ax2.set_ylabel('timers')
+    ax2.set_ylim(-5, 105)
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["right"].set_visible(False)
+    plt.setp(ax2.get_xticklabels(), visible=False)
+
+
+    # Plotting the sgen clk_div value
+    ax3 = fig.add_subplot(grid[3, :], sharex=ax1) #121
+    ax3.plot(output_spikes_timestamps, np.zeros_like(output_spikes_values), 'g|', markersize=15, label='Spike')
+    y_label = ['output']
+    y_pos = np.arange(len(y_label))
+    ax3.set_yticks(y_pos)
+    ax3.set_yticklabels(y_label)
+    ax3.spines["top"].set_visible(False)
+    ax3.spines["right"].set_visible(False)
+
+    plt.setp(ax3.get_xticklabels(), visible=True)
+
+    #plt.xlabel(r'time ($\mu$s)')
+    plt.show()
+
+    # Saving out the figure
+    fig.savefig('Fig_TDE_case_F.pdf')
+    fig.savefig("Fig_TDE_case_F.svg")
+    
+
+"""plotTDEresults2_compact(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])"""
+
+def combinePlotsTDECases():
+
+    doc = ss.Document()
+
+    layout1 = ss.HBoxLayout()
+    layout1.addSVG('Fig_TDE_case_A.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout1.addSVG('Fig_TDE_case_B.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout1.addSVG('Fig_TDE_case_C.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout1.addSVG('Fig_TDE_case_D.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+
+    doc.setLayout(layout1)
+    doc.save('row_0.svg')
+
+    doc = ss.Document()
+
+    layout2 = ss.HBoxLayout()
+
+    layout2.addSVG('Fig_TDE_case_E.svg',alignment=ss.AlignBottom|ss.AlignHCenter)
+    layout2.addSVG('Fig_TDE_case_F.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout2.addSVG('Fig_TDE_case_G.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout2.addSVG('Fig_TDE_case_H.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    #layout1.addLayout(layout2)
+    doc.setLayout(layout2)
+    doc.save('row_1.svg')
+
+    doc = ss.Document()
+
+    layout3 = ss.HBoxLayout()
+
+    layout3.addSVG('Fig_TDE_case_I.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout3.addSVG('Fig_TDE_case_J.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout3.addSVG('Fig_TDE_case_K.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout3.addSVG('Fig_TDE_case_L.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    #layout1.addLayout(layout3)
+    doc.setLayout(layout3)
+    doc.save('row_2.svg')
+
+    doc = ss.Document()
+
+    layout4 = ss.VBoxLayout()
+
+    layout4.addSVG('row_0.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout4.addSVG('row_1.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+    layout4.addSVG('row_2.svg',alignment=ss.AlignTop|ss.AlignHCenter)
+
+    doc.setLayout(layout4)
+
+    doc.save('final_tde.svg')
+
+
+"""combinePlotsTDECases()"""
 
 #
 # Plotting the output spikes over the time
@@ -354,7 +537,7 @@ def plotNumOutSpikesOverTime(output_spikes_timestamps, output_spikes_values):
 
     fig.savefig('tde_out_spikes_over_time.png')
 
-plotNumOutSpikesOverTime(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])
+#plotNumOutSpikesOverTime(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)], all_values[int(TDE_results_datafiles_order.output_spikes.value)])
 
 #
 # Plotting the inter-spike interval
@@ -440,11 +623,18 @@ def plotInterSpikeIntervalForCase(output_spikes_timestamps, output_spikes_values
         else:
             temp_ISI_values = computeInterSpikeInterval(temp_ts_delta_t_no_zeros)
             global_ISI_values.append(temp_ISI_values)
+            """temp_ISI_values_ms = [val / 1000.0 for val in temp_ISI_values]
+            global_ISI_values.append(temp_ISI_values_ms)"""
         
     num_global_ISI_values = len(global_ISI_values)
 
     # Plotting the results in the same plot
+    #fig, ax = plt.subplots(figsize=(8.0, 6.0))
     fig, ax = plt.subplots()
+
+    # Create the figure and the subplots
+    #fig = plt.figure(figsize=(6.4, 3.8))
+    #grid = plt.GridSpec(5, 1, left=0.125, bottom=0.120, right=0.940, top=0.880, hspace=0.2)
 
     pltmarkers = []
     pltmarkers.append('.-')
@@ -472,19 +662,31 @@ def plotInterSpikeIntervalForCase(output_spikes_timestamps, output_spikes_values
 
     for global_isi_index in range(num_global_ISI_values):
 
-        ax.plot(global_ISI_values[global_isi_index], pltmarkers[global_isi_index], label=r'$\Delta$t: ' + str(global_isi_index*50) + r'($\mu$s)')
+        ax.plot(global_ISI_values[global_isi_index], pltmarkers[global_isi_index], label=r'Stim. $\Delta$t: ' + str(global_isi_index*50) + r' ($\mu$s)')
 
-    ax.set(xlabel='Spike pairs', ylabel=r'Time ($\mu$s)', title=r'Inter-Spike Interval over $\Delta$t')
+    ax.set(xlabel='Output spike pair n', ylabel=r'Interspike Interval ($\mu$s)', title=r'Interspike Interval distribution within a burst') #over $\Delta$t ($\mu$s)')
     ax.grid()
 
-    plt.legend(loc='upper left')
-    
+    """for global_isi_index in range(num_global_ISI_values):
+        ax.plot(global_ISI_values[global_isi_index], pltmarkers[global_isi_index], label=r'Stim. $\Delta$t: ' + str(global_isi_index*5) + r' ms')
 
+    ax.set(xlabel='Output spike pair n', ylabel=r'Interspike Interval (ms)', title=r'Interspike Interval distribution within a burst') #over $\Delta$t ($\mu$s)')
+    ax.grid()"""
+
+
+    plt.xlim(0, 30)#125)
+    """plt.legend(loc='lower right')"""
+    plt.legend(loc='center right', title='Time-to-travel')
+    #plt.legend(bbox_to_anchor=(1.05, 1), borderaxespad=0.)
+    
+    plt.tight_layout()
     plt.show()
 
     fig.savefig('tde_isi_over_delta_t.png')
+    fig.savefig('tde_isi_over_delta_t.pdf')
+    fig.savefig('tde_isi_over_delta_t.svg')
 
-plotInterSpikeIntervalForCase(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)])
+##########plotInterSpikeIntervalForCase(all_timestamps[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)], all_values[int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value)])
 
 #
 # Plotting the number of spikes per microsecond
@@ -514,14 +716,14 @@ def  plotNumOutputSpikesPerMicrosecond(output_spikes_timestamps):
 
     #ax.plot(ISI_indexs, ISI_values)
     ax.plot(num_spikes_foreach_us, 'b*-')
-    ax.set(xlabel=r'Time ($\mu$s)', ylabel='No. spikes', title='Number of spikes per microsecond')
+    ax.set(xlabel=r'Time ($\mu$s)', ylabel='Number of spikes', title='Number of spikes per microsecond')
     ax.grid()
 
     plt.show()
 
     fig.savefig('tde_num_spikes_per_us.png')
 
-plotNumOutputSpikesPerMicrosecond(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
+#plotNumOutputSpikesPerMicrosecond(all_timestamps[int(TDE_results_datafiles_order.output_spikes.value)])
 
 #
 # Plotting the variation of the no of spikes over delta_t values
@@ -548,7 +750,7 @@ def plotNumOutputSpikesPerDeltaT(output_spikes_timestamps, output_spikes_values)
     fig, ax = plt.subplots()
 
     ax.plot(delta_t_values, num_spikes_per_delta_t, 'b*-')
-    ax.set(xlabel=r'Time ($\mu$s)', ylabel='No. spikes', title=r'Number of spikes over $\Delta$t')
+    ax.set(xlabel=r'Time ($\mu$s)', ylabel='Number of spikes', title=r'Number of spikes over $\Delta$t')
     ax.grid()
 
     plt.show()
@@ -586,6 +788,7 @@ def plotNumOutputSpikesPerDeltaTForMultipleTDE(files_start_index, files_end_inde
             # If the val is equal to -1, then a new case is going to start
             if val == -1:
                 delta_t_values.append(case_output_spikes_timestamps[val_index])
+                #delta_t_values.append((case_output_spikes_timestamps[val_index]) / 1000.0)
                 max_val = 0
             # If the val is equal to -2, then the current case has finished
             elif val == -2:
@@ -601,23 +804,241 @@ def plotNumOutputSpikesPerDeltaTForMultipleTDE(files_start_index, files_end_inde
         global_num_spikes_per_delta_t.append(num_spikes_per_delta_t)
 
     # Plotting the results in the same plot
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6.4, 3.8))
 
-    ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'b*-', label=r'Detect. time: 100$\mu$s')
-    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'g*-', label=r'Detect. time: 200$\mu$s')
-    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'r*-', label=r'Detect. time: 300$\mu$s')
-    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'c*-', label=r'Detect. time: 400$\mu$s')
-    ax.plot(global_delta_t_values[4], global_num_spikes_per_delta_t[4], 'm*-', label=r'Detect. time: 500$\mu$s')
-    ax.plot(global_delta_t_values[5], global_num_spikes_per_delta_t[5], 'y*-', label=r'Detect. time: 600$\mu$s')
-    ax.plot(global_delta_t_values[6], global_num_spikes_per_delta_t[6], 'k*-', label=r'Detect. time: 700$\mu$s')
+    ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'b*-', label=r'Detect. time: 100 $\mu$s')
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'g*-', label=r'Detect. time: 200 $\mu$s')
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'r*-', label=r'Detect. time: 300 $\mu$s')
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'c*-', label=r'Detect. time: 400 $\mu$s')
+    ax.plot(global_delta_t_values[4], global_num_spikes_per_delta_t[4], 'm*-', label=r'Detect. time: 500 $\mu$s')
+    ax.plot(global_delta_t_values[5], global_num_spikes_per_delta_t[5], 'y*-', label=r'Detect. time: 600 $\mu$s')
+    ax.plot(global_delta_t_values[6], global_num_spikes_per_delta_t[6], 'k*-', label=r'Detect. time: 700 $\mu$s')
 
-    ax.set(xlabel=r'$\Delta$t ($\mu$s)', ylabel='No. spikes', title=r'Number of spikes over $\Delta$t')
+    """ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'b*-', label=r'Detect. time: 10 ms')
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'g*-', label=r'Detect. time: 20 ms')
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'r*-', label=r'Detect. time: 30 ms')
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'c*-', label=r'Detect. time: 40 ms')
+    ax.plot(global_delta_t_values[4], global_num_spikes_per_delta_t[4], 'm*-', label=r'Detect. time: 50 ms')
+    ax.plot(global_delta_t_values[5], global_num_spikes_per_delta_t[5], 'y*-', label=r'Detect. time: 60 ms')
+    ax.plot(global_delta_t_values[6], global_num_spikes_per_delta_t[6], 'k*-', label=r'Detect. time: 70 ms')"""
+
+    ax.set(xlabel=r'$\Delta$t ($\mu$s)', ylabel='Number of spikes', title=r'Number of output spikes over $\Delta$t variation')
     ax.grid()
 
     plt.legend()
+    plt.tight_layout()
+    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 
     plt.show()
 
     fig.savefig('tde_num_spikes_over_delta_t_global.png')
+    fig.savefig('tde_num_spikes_over_delta_t_global.pdf')
+    fig.savefig('tde_num_spikes_over_delta_t_global.svg')
 
-plotNumOutputSpikesPerDeltaTForMultipleTDE(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
+#plotNumOutputSpikesPerDeltaTForMultipleTDE(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
+
+#
+# Plotting the tuning curves
+#
+
+def plotTuningCurvesOfTDEPopulation(files_start_index, files_end_index):
+    # We need to arrays to store the results of each configuration from each file
+    global_delta_t_values = []
+    global_num_spikes_per_delta_t = []
+
+    # For each file
+    for result_file_index in range(files_start_index, files_end_index + 1):
+        # We take the data from a specific file
+        case_output_spikes_values = all_values[result_file_index]
+        case_output_spikes_timestamps = all_timestamps[result_file_index]
+
+        # Temporal results
+        delta_t_values = []
+        num_spikes_per_delta_t = []
+
+        # We need to know the lenght of this array
+        num_elemns = len(case_output_spikes_values)
+        max_val = 0
+
+        # For each value
+        for val_index in range(num_elemns):
+            val = case_output_spikes_values[val_index]
+
+            # If the val is equal to -1, then a new case is going to start
+            if val == -1:
+                delta_t_values.append(case_output_spikes_timestamps[val_index]) #microseconds
+                #delta_t_values.append((case_output_spikes_timestamps[val_index]) / 1000.0) # milliseconds
+                max_val = 0
+            # If the val is equal to -2, then the current case has finished
+            elif val == -2:
+                num_spikes_per_delta_t.append(max_val)
+            # If others, then is the spike counter value. We need to obtain the maximum value
+            else:
+                if val > max_val:
+                    max_val = val
+
+        # Finally, we store the current delta_t value of this case
+        global_delta_t_values.append(delta_t_values)
+        # And its maximum number of spikes
+        global_num_spikes_per_delta_t.append(num_spikes_per_delta_t)
+
+    # Plotting the results in the same plot
+    fig, ax = plt.subplots(figsize=(6.4, 3.8))
+
+    ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'bo-', markersize=5, label=r'TDE 0')
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'gs-', markersize=5, label=r'TDE 1')
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'rv-', markersize=5, label=r'TDE 2')
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'cd-', markersize=5, label=r'TDE 3')
+
+    """ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'b*-', label=r'Detect. time: 10 ms')
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'g*-', label=r'Detect. time: 20 ms')
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'r*-', label=r'Detect. time: 30 ms')
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'c*-', label=r'Detect. time: 40 ms')"""
+
+    ax.set(xlabel=r'$\Delta$t ($\mu$s)', ylabel='Number of spikes', title=r'Example of different tuning curves of TDEs') # microseconds
+    #ax.set(xlabel=r'$\Delta$t (ms)', ylabel='Number of spikes', title=r'Example of different tuning curves of TDEs') # milliseconds
+    ax.grid()
+
+    plt.legend()
+    plt.tight_layout()
+    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+    plt.show()
+
+    fig.savefig('tde_tuning_curves_us.png')
+    fig.savefig('tde_tuning_curves_us.pdf')
+    fig.savefig('tde_tuning_curves_us.svg')
+
+    # Let's generate the population tuning curve: this approach is wrong, because
+    # it takes the max value instead of the sum of the max values
+    population_tuning_curve = []
+    for index in range(len(global_num_spikes_per_delta_t[0])):
+        """values = []
+        values.append(global_num_spikes_per_delta_t[0][index])
+        values.append(global_num_spikes_per_delta_t[1][index])
+        values.append(global_num_spikes_per_delta_t[2][index])
+        values.append(global_num_spikes_per_delta_t[3][index])
+        population_tuning_curve.append(np.max(values))"""
+        values = 0
+        values += global_num_spikes_per_delta_t[0][index]
+        values += global_num_spikes_per_delta_t[1][index]
+        values += global_num_spikes_per_delta_t[2][index]
+        values += global_num_spikes_per_delta_t[3][index]
+        population_tuning_curve.append(values)
+
+    z_1 = np.polyfit(global_delta_t_values[0], population_tuning_curve, 2)
+    print("z")
+    print(z_1)
+    print("Numero z")
+    print(len(z_1))
+    p_1 = np.poly1d(z_1)
+    print("p")
+    print(p_1)
+    print("numero p")
+    print(len(p_1))
+    print("r2")
+    print(r2_score(population_tuning_curve, p_1(global_delta_t_values[0])))
+    print("rmse")
+    print(np.sqrt(mean_squared_error(population_tuning_curve, p_1(global_delta_t_values[0]))))
+
+    xp_1 = np.linspace(0, 750, len(global_delta_t_values[0]))
+
+    """z_3 = np.polyfit(global_delta_t_values[0], population_tuning_curve, 3)
+    print(z_3)
+    print("Numero z")
+    print(len(z_3))
+    p_3 = np.poly1d(z_3)
+    print(p_3)
+    print("numero p")
+    print(len(p_3))
+    print(r2_score(population_tuning_curve, p_3(global_delta_t_values[0])))
+
+    xp_3 = np.linspace(0, 750, len(global_delta_t_values[0]))"""
+
+    ################################
+    x_data = global_delta_t_values[0]
+    print("\n\n x data")
+    print(x_data)
+
+    y_data = population_tuning_curve
+    print("y data")
+    print(y_data)
+
+    #x_data = np.trim_zeros(x_data)
+    x_data[0] = 0.1
+    x_data = x_data[0:(len(x_data)-4)]
+    print("\n\n x data")
+    print(x_data)
+    print("len x data")
+    print(len(x_data))
+
+    print("\n\n log x data")
+    log_x_data = np.log(x_data)
+    print(log_x_data)
+    print("len log x data")
+    print(len(log_x_data))
+    
+    print("\n\n y data")
+    y_data = np.trim_zeros(y_data)
+    print(y_data)
+    print("len y data")
+    log_y_data = np.log(y_data)
+    print(len(y_data))
+
+    print("\n\n log y data")
+    print(log_y_data)
+    print("len log y data")
+    print(len(log_y_data))
+
+    log_y_data = np.delete(log_y_data, len(log_y_data)-1)
+
+    print("\n\n log y data")
+    print(log_y_data)
+
+
+
+    curve_fit = np.polyfit(x_data, log_y_data, 1)
+
+    print("curve fit")
+    print(curve_fit)
+
+    #y = np.exp(curve_fit[0]) * np.exp(curve_fit[1]*x_data)
+    #y = [np.exp(4.07822922) * np.exp(-0.006263*x_data[val]) for val in range(len(x_data))] # microseconds wrong
+    y = [np.exp(5.07915175) * np.exp(-0.00779659*x_data[val]) for val in range(len(x_data))] # microseconds good
+    #y = [np.exp(5.52467424) * np.exp(-0.06746445*x_data[val]) for val in range(len(x_data))] # milliseconds for wrong population tuning curve
+    #y = [np.exp(6.54144743) * np.exp(-0.0831564*x_data[val]) for val in range(len(x_data))] # milliseconds for good population tuning curve
+    fig, ax = plt.subplots(figsize=(6.4, 3.8))
+    y_data = np.delete(y_data, len(y_data)-1)
+    ax.plot(x_data, y_data, "o")
+
+    ax.plot(x_data, y, ".-")
+
+    plt.show()
+
+    ################################
+
+    fig, ax = plt.subplots(figsize=(6.4, 4.8))
+    ax.plot(global_delta_t_values[0], global_num_spikes_per_delta_t[0], 'bo-', markersize=5, label=r'TDE 0 tuning curve', alpha=0.90)
+    ax.plot(global_delta_t_values[1], global_num_spikes_per_delta_t[1], 'gs-', markersize=5, label=r'TDE 1 tuning curve', alpha=0.90)
+    ax.plot(global_delta_t_values[2], global_num_spikes_per_delta_t[2], 'rv-', markersize=5, label=r'TDE 2 tuning curve', alpha=0.90)
+    ax.plot(global_delta_t_values[3], global_num_spikes_per_delta_t[3], 'cd-', markersize=5, label=r'TDE 3 tuning curve', alpha=0.90)
+    ax.plot(global_delta_t_values[0], population_tuning_curve, 'm*-', markersize=5, label=r'Population tuning curve', alpha=0.50)
+    #ax.plot(xp_1, p_1(xp_1), 'y--', markersize=5, linewidth=2.0, label=r'$0.0001918x^2-0.2087x+55.08$')
+    ax.plot(x_data, y, 'y--', markersize=5, linewidth=2.5, color='y', label=r'$f (\Delta t)=e^{5.07915175}*e^{-0.00779659\Delta t}$,'+"\n"+r'$R^2=0.87, RMSE=14.61$') # microseconds
+    #ax.plot(x_data, y, 'y--', markersize=5, linewidth=2.5, color='y', label=r'$f (\Delta t)=e^{6.54144743}*e^{-0.0831564\Delta t}$,'+"\n"+r'$R^2=0.93, RMSE=42.24$', alpha=0.50) # milliseconds
+    #ax.plot(xp_3, p_3(xp_3), 'k--', markersize=5, linewidth=2.0, label=r'$-5.383e-07x^3+0.0007974x^2-0.3874x+65.33$')
+    ax.set(xlabel=r'$\Delta$t ($\mu$s)', ylabel='Number of spikes', title=r'Population tuning curve and exponential fit') # microseconds
+    #ax.set(xlabel=r'$\Delta$t (ms)', ylabel='Number of spikes', title=r'Population tuning curve and exponential fit') # milliseconds
+    ax.grid()
+
+    plt.legend()
+    plt.tight_layout()
+    #plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+
+    plt.show()
+    fig.savefig('tde_population_tuning_curve_us.png')
+    fig.savefig('tde_population_tuning_curve_us.pdf')
+    fig.savefig('tde_population_tuning_curve_us.svg')
+    
+
+plotTuningCurvesOfTDEPopulation(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
