@@ -3,8 +3,8 @@
 -- Project    : 
 -------------------------------------------------------------------------------
 -- File       : fpga_test_top_tb.vhd
--- Author     :   <dgutierrez@DESKTOP-16SBGVD>
--- Company    : 
+-- Author     : Daniel Gutierrez-Galan
+-- Company    : University of Seville
 -- Created    : 2020-05-10
 -- Last update: 2020-05-10
 -- Platform   : 
@@ -12,7 +12,7 @@
 -------------------------------------------------------------------------------
 -- Description: 
 -------------------------------------------------------------------------------
--- Copyright (c) 2020 
+-- Copyright (c) 2020 University of Seville
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author  Description
@@ -34,18 +34,34 @@ end entity fpga_test_top_tb;
 
 architecture Behavioral of fpga_test_top_tb is
 
-    -- component generics
-    constant g_NBITS              : integer := 16;
-    constant g_LOG2NBITS          : integer := 4;
-    constant g_SPIKEGEN_METHOD    : integer := 1;
-    constant g_TWO_POW_NBITS_DATA : integer := 65536;
+    -- DUT
+    component fpga_test_top is
+        
+        generic (
+            g_enable_monitor : integer := 0   -- If 0, spikes monitor is disabled
+        );
+        port (
+            i_clock        : in  std_logic;   -- Main clock
+            i_nreset       : in  std_logic;   -- Reset
+            o_output_spike : out std_logic;   -- Output spikes from TDE
+            o_aer_data_out : out std_logic_vector(15 downto 0);  -- AER data bus
+            o_aer_req_out  : out std_logic;   -- AER req signal
+            i_aer_ack_out  : in  std_logic    -- AER ack signal
+        );
+    
+    end component;
 
-    -- component ports
+    -- Component input ports
     signal i_clock        : std_logic := '1';
     signal i_nreset       : std_logic := '0';
-    signal o_output_spike : std_logic;
+    signal i_aer_ack_out  : std_logic := '1';
 	
-	-- clock
+	-- Component output ports
+	signal o_output_spike : std_logic;
+	signal o_aer_data_out : std_logic_vector(15 downto 0);
+	signal o_aer_req_out  : std_logic;
+	
+	-- Clock
 	constant c_clock_period : time := 20 ns;
 	
 	-- Testbench flags
@@ -59,16 +75,13 @@ begin  -- architecture Behavioral
 
     -- component instantiation
     DUT: entity work.fpga_test_top
---        generic map (
---            g_NBITS              => g_NBITS,
---            g_LOG2NBITS          => g_LOG2NBITS,
---            g_SPIKEGEN_METHOD    => g_SPIKEGEN_METHOD,
---            g_TWO_POW_NBITS_DATA => g_TWO_POW_NBITS_DATA
---        )
         port map (
             i_clock        => i_clock,
             i_nreset       => i_nreset,
-            o_output_spike => o_output_spike
+            o_output_spike => o_output_spike,
+			o_aer_data_out => o_aer_data_out,
+			o_aer_req_out  => o_aer_req_out,
+			i_aer_ack_out  => i_aer_ack_out
         );
 
     -- clock generation
@@ -83,7 +96,7 @@ begin  -- architecture Behavioral
 
         i_nreset <= '1';
 
-        wait for 180 sec;
+        wait for 60 ms;
 		
 		tb_end_stimuli <= '1';
         report "END OF SIMULATION!" severity note;
@@ -103,7 +116,7 @@ begin  -- architecture Behavioral
         
     begin
         --// Open RESULTS file in write mode
-        file_open(tb_output_aer_events_file, "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Examples/FPGA_test/results_postimplem_simulation.txt", write_mode);
+        file_open(tb_output_aer_events_file, "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Examples/FPGA_test/results/test_0001/postsynth_t.txt", write_mode);
 
         --// Loop while the simulation doesn't finish
         while tb_end_stimuli = '0' loop
