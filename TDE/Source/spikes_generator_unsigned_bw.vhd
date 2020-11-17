@@ -1,6 +1,6 @@
 --/////////////////////////////////////////////////////////////////////////////////
 --//                                                                             //
---//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//    Copyright ï¿½ 2020  Daniel Gutierrez-Galan                                 //
 --//                                                                             //
 --//    This file is part of the TDE_vhdl project.                               //
 --//                                                                             //
