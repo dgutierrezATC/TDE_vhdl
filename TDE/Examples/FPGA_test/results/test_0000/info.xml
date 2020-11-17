@@ -1,0 +1,74 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+/////////////////////////////////////////////////////////////////////////////////
+//                                                                             //
+//    Copyright 2020  Daniel Gutierrez-Galan                                   //
+//                                                                             //
+//    This file is part of the TDE_vhdl project.                               //
+//                                                                             //
+//    TDE_vhdl is free software: you can redistribute it and/or modify         //
+//    it under the terms of the GNU General Public License as published by     //
+//    the Free Software Foundation, either version 3 of the License, or        //
+//    (at your option) any later version.                                      //
+//                                                                             //
+//    THE_vhdl is distributed in the hope that it will be useful,              //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of           //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the              //
+//    GNU General Public License for more details.                             //
+//                                                                             //
+//    You should have received a copy of the GNU General Public License        //
+//    along with TDE_vhdl. If not, see <http://www.gnu.org/licenses/>.         //
+//                                                                             //
+/////////////////////////////////////////////////////////////////////////////////
+-->
+
+<!--Test info file-->
+<test>
+	<!--Test name (folder filename)-->
+	<name>test_0000</name> 
+	<description>TDE test working in us with large detection time and short delta_t value</description>
+	<!--TDE neuron module-->
+	<tde>
+		<!--TDE module generics values-->
+		<generics> 
+			<nbits>i16</nbits>
+			<log2nbits>i4</log2nbits>
+			<spikegen_method>i1</spikegen_method>
+			<two_pow_nbits_data>i65536</two_pow_nbits_data>
+		</generics>
+		<!--TDE module inputs values-->
+		<inputs> 
+			<tr_tick>us</tr_tick>
+			<tr_tick_div>i50</tr_tick_div>
+			<tau>h0</tau>
+			<weight>h4</weight>
+			<decay>h2</decay>
+			<detection_time>h02BC</detection_time>
+			<faci_sat>h0300</faci_sat>
+			<trig_sat>h0300</trig_sat>
+		</inputs>
+	</tde>
+	<!--TDE input stimulus-->
+	<stimulus>
+		<delta_t>i100</delta_t>
+		<faci_div>i50000</faci_div>
+		<trig_div>i55000</trig_div>
+		<wait_div>i25000000</wait_div>
+	</stimulus>
+	<!--Spikes monitor module-->
+	<monitor>
+		<enable>1</enable>
+		<generics> 
+			<n_spikes>8</n_spikes>
+			<log_2_n_spikes>3</log_2_n_spikes>
+			<tam_aer>128</tam_aer>
+			<il_aer>7</il_aer>
+		</generics>
+		<inputs>
+		</inputs>
+	</monitor>
+	<!--FPGA configuration-->
+	<config>
+		<clock>50000000</clock>
+		<fpga>node</fpga>
+	</config>
