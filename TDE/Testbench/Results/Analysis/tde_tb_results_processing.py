@@ -25,12 +25,12 @@ import math
 import enum
 import numpy as np
 import random
-import svgutils.transform as sg
-from svgutils.compose import *
-from svgutils.transform import from_mpl
-from svgutils.transform import fromfile
-from svgutils.templates import VerticalLayout, ColumnLayout
-import svg_stack as ss
+#import svgutils.transform as sg
+#from svgutils.compose import *
+#from svgutils.transform import from_mpl
+#from svgutils.transform import fromfile
+#from svgutils.templates import VerticalLayout, ColumnLayout
+#import svg_stack as ss
 from sklearn.metrics import mean_squared_error, r2_score
 
 #
@@ -223,7 +223,7 @@ def plotFacilitationBlockOutput(input_spikes_faci_timestamps, input_spikes_faci_
     ax2.plot(faci_timer_timestamps, faci_timer_values, 'r:', label="timer_0")
     ax2.plot(faci_timer_weighted_timestamps, faci_timer_weighted_values, 'r--', label="shift_1")
 
-    ax2.set_ylabel('out (uint)')
+    ax2.set_ylabel('output\nsignal (uint)')
     plt.setp(ax2.get_xticklabels(), visible=False)
     plt.legend(loc='upper right')
 
@@ -231,7 +231,7 @@ def plotFacilitationBlockOutput(input_spikes_faci_timestamps, input_spikes_faci_
     ax3 = fig.add_subplot(grid[3:,:], sharex=ax1) #212
     ax3.plot(sgen_val2gen_timestamps, sgen_val2gen_values, 'r', label="add_0")
 
-    ax3.set_ylabel('out (uint)')
+    ax3.set_ylabel('output\nsignal (uint)')
     plt.setp(ax3.get_xticklabels(), visible=True)
 
     # Some options
@@ -241,11 +241,68 @@ def plotFacilitationBlockOutput(input_spikes_faci_timestamps, input_spikes_faci_
 
     # Saving out the figure
     fig.savefig('gain_block_results.pdf')
-"""
+
 plotFacilitationBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.faci_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.faci_timer_weighted.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_val.value)], all_values[int(TDE_results_datafiles_order.sgen_val.value)])
+
+def plotTriggerBlockOutput( input_spikes_faci_timestamps, input_spikes_faci_values, \
+                            faci_timer_timestamps, faci_timer_values, 
+                            input_spikes_trig_timestamps, input_spikes_trig_values, \
+                            trig_timer_timestamps, trig_timer_values, \
+                            trigg_timer_weighted_timestamps, trigg_timer_weighted_values, \
+                            sgen_clkdiv_timestamps, sgen_clkdiv_values):
+    # Create the figure and the subplots
+    fig = plt.figure(figsize=(6.4, 3.8))
+    grid = plt.GridSpec(5, 1, left=0.125, bottom=0.120, right=0.940, top=0.880, hspace=0.2)
+
+    # Change the figure title
+    fig.suptitle('EPSC generator block example')
+
+    # Plotting the trigger spikes
+    ax1 = fig.add_subplot(grid[0, :]) #121
+    ax1.plot(input_spikes_faci_timestamps, np.zeros_like(input_spikes_faci_values), 'r|', markersize=10, label='Facilitatory')
+    ax1.plot(input_spikes_trig_timestamps, np.zeros_like(input_spikes_trig_values), 'b|', markersize=10, label='Facilitatory')
+
+    y_labels = ['faci&trig.']
+    y_pos = np.arange(len(y_labels))
+    ax1.set_yticks(y_pos)
+    ax1.set_yticklabels(y_labels)
+    plt.setp(ax1.get_xticklabels(), visible=False)
+
+    # Plotting the trigger timer value
+    ax2 = fig.add_subplot(grid[1:3,:], sharex=ax1) #212
+    ax2.plot(faci_timer_timestamps, faci_timer_values, 'r:', label="timer_0")
+    ax2.plot(trig_timer_timestamps, trig_timer_values, 'b:', label="timer_1")
+    ax2.plot(trigg_timer_weighted_timestamps, trigg_timer_weighted_values, 'b--', label="shift_2")
+
+    ax2.set_ylabel('output\nsignal (uint)')
+    plt.setp(ax2.get_xticklabels(), visible=False)
+    plt.legend(loc='upper right')
+
+    # Plotting the sgen clk_div value
+    ax3 = fig.add_subplot(grid[3:, :]) #121
+    ax3.plot(sgen_clkdiv_timestamps, sgen_clkdiv_values, 'b', label="sub_0")
+
+    ax3.set_ylabel('output\nsignal (uint)')
+    plt.setp(ax3.get_xticklabels(), visible=True)
+
+    plt.xlabel(r'time ($\mu$s)')
+    plt.legend(loc='center right')
+    plt.show()
+
+    # Saving out the figure
+    fig.savefig('epsc_block_results_v2.pdf')
+
+"""plotTriggerBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_faci_spikes.value)], all_values[int(TDE_results_datafiles_order.input_faci_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.faci_timer.value)], all_values[int(TDE_results_datafiles_order.faci_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], \
+                all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)])
+"""
+##########################################################################################
 """
 def plotTriggerBlockOutput(input_spikes_trig_timestamps, input_spikes_trig_values, \
                             trig_timer_timestamps, trig_timer_values, \
@@ -289,13 +346,15 @@ def plotTriggerBlockOutput(input_spikes_trig_timestamps, input_spikes_trig_value
     plt.show()
 
     # Saving out the figure
-    fig.savefig('epsc_block_results.pdf')
-"""
+    #fig.savefig('epsc_block_results.pdf')
+
 plotTriggerBlockOutput(all_timestamps[int(TDE_results_datafiles_order.input_trig_spikes.value)], all_values[int(TDE_results_datafiles_order.input_trig_spikes.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.trigg_timer.value)], all_values[int(TDE_results_datafiles_order.trigg_timer.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], all_values[int(TDE_results_datafiles_order.trigg_timer_weighted.value)], \
                 all_timestamps[int(TDE_results_datafiles_order.sgen_clkdiv.value)], all_values[int(TDE_results_datafiles_order.sgen_clkdiv.value)])
 """
+##########################################################################################
+
 def plotTDEresults(input_spikes_faci_timestamps, input_spikes_faci_values, \
                     input_spikes_trig_timestamps, input_spikes_trig_values, \
                     faci_timer_timestamps, faci_timer_values, \
@@ -1041,4 +1100,4 @@ def plotTuningCurvesOfTDEPopulation(files_start_index, files_end_index):
     fig.savefig('tde_population_tuning_curve_us.svg')
     
 
-plotTuningCurvesOfTDEPopulation(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
+#plotTuningCurvesOfTDEPopulation(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
