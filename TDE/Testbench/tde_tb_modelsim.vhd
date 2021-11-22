@@ -153,12 +153,12 @@ architecture Behavioral of tde_tb is
 	-- Case 5: 1 facilitatory and 1 trigger after 600 us
 	-- Case 6: 1 facilitatory and 1 trigger after 100 us and another after (100+) 300 us
 	-- Case 7: 1 facilitatory and 1 facilitatory after 100 us and 1 trigger after (100+) 300 us
-	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "00010000";  --Set to '1' to activate: 0 LSB, 7 MSB
+	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "00000001";  --Set to '1' to activate: 0 LSB, 7 MSB
 	
-	constant c_basic_behavioral_test                 : boolean := false;  -- If true, TDE behavioral test with basic cases will be launched
+	constant c_basic_behavioral_test                 : boolean := true;  -- If true, TDE behavioral test with basic cases will be launched
 	constant c_delta_t_variation_test                : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
 	constant c_global_delta_t_variation_test         : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE detec time will be launched
-	constant c_tunning_curves_test                   : boolean := true; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
+	constant c_tunning_curves_test                   : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
 	
 	-- Params for the tunning curves test
 	-- For 4 TDEs:
@@ -920,11 +920,11 @@ begin  -- architecture Behavioral
 
 			-- Set all the parameters
 			i_tau            <= x"0"; --; 0 for ms
-			i_weight         <= x"5"; --; 0 for ms
+			i_weight         <= x"1"; --; 0 for ms
 			i_decay          <= x"1"; --; 3 for ms; 0x046 for ms detection time
-			i_detection_time <= x"0066"; --100 = 0x64; 200 = 0xC8; 300 = 0x12C; 400 = 0x190; 500 = 0x1F4; 600 = 0x258; 700
-			i_faci_sat_value <= x"0100"; --0x3bc
-			i_trig_sat_value <= x"0100";
+			i_detection_time <= x"02BC"; --100 = 0x64; 200 = 0xC8; 300 = 0x12C; 400 = 0x190; 500 = 0x1F4; 600 = 0x258; 700
+			i_faci_sat_value <= x"03BC"; --0x3bc
+			i_trig_sat_value <= x"03BC";
 
 			-- Wait
 			wait for 1 us;
@@ -957,30 +957,30 @@ begin  -- architecture Behavioral
 				i_facilitatory <= '0';
 
 				-- Wait for 710 us
-				wait for 110 us;
+				wait for 710 us;
 
-				-- -- Let's saturate the facilitatory timer
+				-- Let's saturate the facilitatory timer
 
-				-- -- Inconming pulse
-				-- i_facilitatory <= '1';
-				-- wait for c_i_clock_period;
-				-- i_facilitatory <= '0';
-				-- wait for c_i_clock_period*5000;
+				-- Inconming pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- -- Inconming pulse
-				-- i_facilitatory <= '1';
-				-- wait for c_i_clock_period;
-				-- i_facilitatory <= '0';
-				-- wait for c_i_clock_period*5000;
+				-- Inconming pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- -- Inconming pulse
-				-- i_facilitatory <= '1';
-				-- wait for c_i_clock_period;
-				-- i_facilitatory <= '0';
-				-- wait for c_i_clock_period*5000;
+				-- Inconming pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- -- Wait for 1 ms
-				-- wait for 1 ms;
+				-- Wait for 1 ms
+				wait for 1 ms;
 
 				-- Check the output
 				report "End of CASE 0." severity note;
@@ -1113,40 +1113,40 @@ begin  -- architecture Behavioral
 				i_trigger <= '0';
 
 				-- Wait for 710 us
-				wait for 110 us; --100ms
+				wait for 710 us; --100ms
 
-				-- -- Let's saturate the trigger timer
-				-- -- Facilitatory pulse
-				-- i_facilitatory <= '1';
-				-- wait for c_i_clock_period;
-				-- i_facilitatory <= '0';
+				-- Let's saturate the trigger timer
+				-- Facilitatory pulse
+				i_facilitatory <= '1';
+				wait for c_i_clock_period;
+				i_facilitatory <= '0';
 
-				-- -- Wait 1 clock cycle
-				-- wait for 100 us;
+				-- Wait 1 clock cycle
+				wait for 100 us;
 
-				-- -- Trigger pulse
-				-- i_trigger <= '1';
-				-- wait for c_i_clock_period;
-				-- i_trigger <= '0';
-				-- wait for c_i_clock_period*5000;
+				-- Trigger pulse
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- i_trigger <= '1';
-				-- wait for c_i_clock_period;
-				-- i_trigger <= '0';
-				-- wait for c_i_clock_period*5000;
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- i_trigger <= '1';
-				-- wait for c_i_clock_period;
-				-- i_trigger <= '0';
-				-- wait for c_i_clock_period*5000;
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- i_trigger <= '1';
-				-- wait for c_i_clock_period;
-				-- i_trigger <= '0';
-				-- wait for c_i_clock_period*5000;
+				i_trigger <= '1';
+				wait for c_i_clock_period;
+				i_trigger <= '0';
+				wait for c_i_clock_period*5000;
 
-				-- --Wait for 1 ms
-				-- wait for 1 ms;
+				--Wait for 1 ms
+				wait for 1 ms;
 
 				-- Check the output
 				report "End of CASE 4." severity note;
@@ -1866,8 +1866,8 @@ begin  -- architecture Behavioral
         ---------------------------------------------------------------------------
 		p_spying_sgen_val_to_generate: process
 		begin
-			init_signal_spy("/tde_tb/DUT/spike_generator_0/r_value_to_generate","/spy_spikegen_val2gen", 1);
-			--init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			--init_signal_spy("/tde_tb/DUT/spike_generator_0/r_value_to_generate","/spy_spikegen_val2gen", 1);
+			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
 			--init_signal_spy("/tde_tb/DUT/w_sgen_val2gen_feedback","/spy_spikegen_val2gen", 1);
 			wait;
 		end process p_spying_sgen_val_to_generate;
