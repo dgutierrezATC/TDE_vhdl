@@ -61,6 +61,7 @@ entity tde is
         i_clock              : in  std_logic;                                     -- Main clock
         i_nreset             : in  std_logic;                                     -- Asynchronous reset (active low)
         i_tr_tick            : in  std_logic;                                     -- Time resolution tick
+        i_mode               : in  std_logic;                                     -- Mode of the TDE (0--> Normal, 1--> Inverted)
         i_facilitatory       : in  std_logic;                                     -- Facilitatory input
         i_trigger            : in  std_logic;                                     -- Trigger input
         i_tau                : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);  -- Tau value
@@ -85,11 +86,14 @@ architecture Structural of tde is
     signal w_trigger      : std_logic;  -- Trigger signal
     signal w_facilitation : std_logic;  -- Facilitation signal
 
+    signal w_detection_time_value_weighted                      : std_logic_vector((g_NBITS - 1) downto 0);  -- Detection time value weighted
     signal w_facilitation_timer_value                           : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the facilitation timer
     signal w_facilitation_timer_value_weighted                  : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the facilitation timer weighted
     signal w_facilitation_timer_value_to_trigger_timer_weighted : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the facilitation timer weighted
     signal w_value_to_generate                                  : std_logic_vector((g_NBITS - 1) downto 0);  -- Value to generate in the spike generator
-    
+    signal w_value_to_generate_inverted                         : std_logic_vector((g_NBITS - 1) downto 0);  -- Inverted value to generate in the spike generator
+    signal w_value_to_generate_mux                              : std_logic_vector((g_NBITS - 1) downto 0);  -- Muxed value to generate in the spike generator
+
     signal w_trigger_timer_value         : std_logic_vector((g_NBITS - 1) downto 0);  -- Current value of the trigger timer
     signal w_trigger_timer_value_shifted : std_logic_vector((g_NBITS - 1) downto 0);  -- Clock divisor value of the spike generator
     
@@ -97,6 +101,7 @@ architecture Structural of tde is
     signal w_sgen_clkdiv_current_value : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv current value
     signal w_sgen_val2gen_feedback     : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered value to generate
     signal w_clkdiv_value              : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv valid value
+    signal w_clkdiv_value_mux          : std_logic_vector((g_NBITS - 1) downto 0);  -- Registered clkdiv mux output value
     signal w_clkdiv_clear              : std_logic;                                 -- Clear signal to disable the spike generator
     signal w_sgen_val2gen_clear        : std_logic;                                 -- Clear signal to the register which store the last loaded value into the sgen
     
@@ -267,6 +272,34 @@ begin  -- architecture Structural
         );
 
     --
+    -- Reference shifted detection time
+    --
+    shift_3: shift_register
+        generic map (
+            g_NBITS         => g_NBITS,
+            g_LOG2NBITS     => g_LOG2NBITS
+        )
+        port map (
+            i_data_in       => i_detection_time,
+            o_data_out      => w_detection_time_value_weighted,
+            i_left_right    => '0',
+            i_num_positions => i_weight
+        );
+
+    --
+    -- Spikes generator clk_div value computation
+    --
+    sub_1: subtractor
+        generic map (
+            g_NBITS        => g_NBITS
+        )
+        port map (
+            i_input_data_a => w_detection_time_value_weighted,
+            i_input_data_b => w_value_to_generate,
+            o_output_data  => w_value_to_generate_inverted
+        );
+
+    --
     -- Value to generate feedback adder
     --
     add_0: adder
@@ -376,6 +409,13 @@ begin  -- architecture Structural
             i_input_data_b => w_sgen_clkdiv_current_value,
             o_output_data  => w_clkdiv_value
         );
+    
+    --
+    -- Multiplexer
+    --
+    w_clkdiv_value_mux      <= w_clkdiv_value when (i_mode = '0') else w_sgen_clkdiv_current_value;
+    w_value_to_generate_mux <= w_value_to_generate when (i_mode = '0') else w_value_to_generate_inverted;
+    
         
     --
     -- Spikes generator
@@ -389,8 +429,8 @@ begin  -- architecture Structural
         port map (
             i_clock              => i_clock,
             i_nreset             => i_nreset,
-            i_genfreq_divisor    => w_clkdiv_value,
-            i_data_in            => w_value_to_generate,
+            i_genfreq_divisor    => w_clkdiv_value_mux,--w_clkdiv_value,
+            i_data_in            => w_value_to_generate_mux,--w_value_to_generate,
             i_write              => r_trigger_latched,
             i_clear              => w_clkdiv_clear,
             o_spike_out          => o_output_spike
