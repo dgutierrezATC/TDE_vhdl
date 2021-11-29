@@ -1,6 +1,6 @@
 --/////////////////////////////////////////////////////////////////////////////////
 --//                                                                             //
---//    Copyright © 2020  Daniel Gutierrez-Galan                                 //
+--//    Copyright ï¿½ 2020  Daniel Gutierrez-Galan                                 //
 --//                                                                             //
 --//    This file is part of the TDE_vhdl project.                               //
 --//                                                                             //
@@ -75,6 +75,7 @@ architecture Behavioral of tde_tb is
             i_clock              : in  std_logic;
             i_nreset             : in  std_logic;
             i_tr_tick            : in  std_logic;
+            i_mode               : in  std_logic;
             i_facilitatory       : in  std_logic;
             i_trigger            : in  std_logic;
             i_tau                : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
@@ -101,6 +102,7 @@ architecture Behavioral of tde_tb is
     signal i_clock                : std_logic                                    := '0';
     signal i_nreset               : std_logic                                    := '0';
     signal i_tr_tick              : std_logic                                    := '0';
+    signal i_mode                 : std_logic                                    := '1';
     signal i_facilitatory         : std_logic                                    := '0';
     signal i_trigger              : std_logic                                    := '0';
     signal i_tau                  : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
@@ -129,7 +131,7 @@ architecture Behavioral of tde_tb is
     signal tb_end_of_simulation : std_logic := '0'; 
                                                     
     --Saving results in a file
-    file f_results : text open write_mode is "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Testbench/Results/Files/tde_tb_vivado_o_output_spikes.txt";  -- Output spikes from the TDE model
+    file f_results : text open write_mode is "D:/Proyectos/Universidad/GitHub/Dani_repos/TDE_vhdl/TDE/Testbench/Results/Files/inverted_tde_tb_vivado_o_output_spikes.txt";  -- Output spikes from the TDE model
 
 begin  -- architecture Behavioral
 
@@ -147,6 +149,7 @@ begin  -- architecture Behavioral
             i_clock          => i_clock,
             i_nreset         => i_nreset,
             i_tr_tick        => i_tr_tick,
+            i_mode           => i_mode,
             i_facilitatory   => i_facilitatory,
             i_trigger        => i_trigger,
             i_tau            => i_tau,
@@ -219,8 +222,8 @@ begin  -- architecture Behavioral
 
         -- Set all the parameters
         i_tau            <= x"0";
-        i_weight         <= x"4";
-        i_decay          <= x"2";
+        i_weight         <= x"5";
+        i_decay          <= x"0";
         i_detection_time <= x"02BC";
         i_faci_sat_value <= x"F000";
         i_trig_sat_value <= x"F000";
@@ -239,110 +242,110 @@ begin  -- architecture Behavioral
         -- Cases
         --
 
-        ---------
-        -- Case 0: 1 facilitation pulse 
-        ---------
+        -- ---------
+        -- -- Case 0: 1 facilitation pulse 
+        -- ---------
 
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+        -- -- Sync
+        -- wait until i_clock'event and  i_clock = '1';
+        -- wait for c_i_clock_period;
 
-        -- Inconming pulse
-        i_facilitatory <= '1';
-        wait for c_i_clock_period;
-        i_facilitatory <= '0';
+        -- -- Inconming pulse
+        -- i_facilitatory <= '1';
+        -- wait for c_i_clock_period;
+        -- i_facilitatory <= '0';
         
-        -- Wait for 710 us
-        wait for 710 us;
+        -- -- Wait for 710 us
+        -- wait for 710 us;
         
-        -- Check the output
-        report "End of CASE 0." severity note;
+        -- -- Check the output
+        -- report "End of CASE 0." severity note;
 
-        -- Wait for a few of microseconds
-        wait for 5 us;
+        -- -- Wait for a few of microseconds
+        -- wait for 5 us;
         
-        ---------
-        -- Case 1: 1 trigger pulse 
-        ---------
+        -- ---------
+        -- -- Case 1: 1 trigger pulse 
+        -- ---------
         
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+        -- -- Sync
+        -- wait until i_clock'event and  i_clock = '1';
+        -- wait for c_i_clock_period;
 
-        -- Inconming pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
+        -- -- Inconming pulse
+        -- i_trigger <= '1';
+        -- wait for c_i_clock_period;
+        -- i_trigger <= '0';
         
-        -- Wait for 710 us
-        wait for 10 us;
+        -- -- Wait for 710 us
+        -- wait for 10 us;
         
-        -- Check the output
-        report "End of CASE 1." severity note;
+        -- -- Check the output
+        -- report "End of CASE 1." severity note;
 
-        -- Wait for a few of microseconds
-        wait for 5 us;
+        -- -- Wait for a few of microseconds
+        -- wait for 5 us;
         
-        ---------
-        -- Case 2: 1 trigger pulse, then 1 facilitatory pulse 
-        ---------
+        -- ---------
+        -- -- Case 2: 1 trigger pulse, then 1 facilitatory pulse 
+        -- ---------
         
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+        -- -- Sync
+        -- wait until i_clock'event and  i_clock = '1';
+        -- wait for c_i_clock_period;
 
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
+        -- -- Trigger pulse
+        -- i_trigger <= '1';
+        -- wait for c_i_clock_period;
+        -- i_trigger <= '0';
         
-        -- Wait 1 clock cycle
-        wait for c_i_clock_period;
+        -- -- Wait 1 clock cycle
+        -- wait for c_i_clock_period;
         
-        -- Facilitatory pulse
-        i_facilitatory <= '1';
-        wait for c_i_clock_period;
-        i_facilitatory <= '0';
+        -- -- Facilitatory pulse
+        -- i_facilitatory <= '1';
+        -- wait for c_i_clock_period;
+        -- i_facilitatory <= '0';
         
-        -- Wait for 710 us
-        wait for 710 us;
+        -- -- Wait for 710 us
+        -- wait for 710 us;
         
-        -- Check the output
-        report "End of CASE 2." severity note;
+        -- -- Check the output
+        -- report "End of CASE 2." severity note;
 
-        -- Wait for a few of microseconds
-        wait for 5 us;
+        -- -- Wait for a few of microseconds
+        -- wait for 5 us;
         
-        ---------
-        -- Case 3: 1 facilitatory pulse, then 1 trigger pulse after 710 us
-        --         (out of the detection time)
-        ---------
+        -- ---------
+        -- -- Case 3: 1 facilitatory pulse, then 1 trigger pulse after 710 us
+        -- --         (out of the detection time)
+        -- ---------
         
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+        -- -- Sync
+        -- wait until i_clock'event and  i_clock = '1';
+        -- wait for c_i_clock_period;
 
-        -- Facilitatory pulse
-        i_facilitatory <= '1';
-        wait for c_i_clock_period;
-        i_facilitatory <= '0';
+        -- -- Facilitatory pulse
+        -- i_facilitatory <= '1';
+        -- wait for c_i_clock_period;
+        -- i_facilitatory <= '0';
         
-        -- Wait 1 clock cycle
-        wait for 710 us;
+        -- -- Wait 1 clock cycle
+        -- wait for 710 us;
         
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
+        -- -- Trigger pulse
+        -- i_trigger <= '1';
+        -- wait for c_i_clock_period;
+        -- i_trigger <= '0';
         
-        -- Wait for 710 us
-        wait for 710 us;
+        -- -- Wait for 710 us
+        -- wait for 710 us;
         
-        -- Check the output
-        report "End of CASE 3." severity note;
+        -- -- Check the output
+        -- report "End of CASE 3." severity note;
 
-        -- Wait for a few of microseconds
-        wait for 5 us;
+        -- -- Wait for a few of microseconds
+        -- wait for 5 us;
         
         ---------
         -- Case 4: 1 facilitatory pulse, then 1 trigger pulse after 10 us (low delay)
@@ -358,7 +361,7 @@ begin  -- architecture Behavioral
         i_facilitatory <= '0';
         
         -- Wait 1 clock cycle
-        wait for 10 us;
+        wait for 200 us;
         
         -- Trigger pulse
         i_trigger <= '1';
@@ -404,41 +407,41 @@ begin  -- architecture Behavioral
         -- Wait for a few of microseconds
         wait for 5 us;
         
-        ---------
-        -- Case 6: 1 facilitatory pulse, then 1 trigger pulse after 100 us,
-        --         and 1 trigger pulse after (100) + 300 us
-        ---------
+        -- ---------
+        -- -- Case 6: 1 facilitatory pulse, then 1 trigger pulse after 100 us,
+        -- --         and 1 trigger pulse after (100) + 300 us
+        -- ---------
         
-        -- Sync
-        wait until i_clock'event and  i_clock = '1';
-        wait for c_i_clock_period;
+        -- -- Sync
+        -- wait until i_clock'event and  i_clock = '1';
+        -- wait for c_i_clock_period;
 
-        -- Facilitatory pulse
-        i_facilitatory <= '1';
-        wait for c_i_clock_period;
-        i_facilitatory <= '0';
+        -- -- Facilitatory pulse
+        -- i_facilitatory <= '1';
+        -- wait for c_i_clock_period;
+        -- i_facilitatory <= '0';
         
-        -- Wait 1 clock cycle
-        wait for 100 us;
+        -- -- Wait 1 clock cycle
+        -- wait for 100 us;
         
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
+        -- -- Trigger pulse
+        -- i_trigger <= '1';
+        -- wait for c_i_clock_period;
+        -- i_trigger <= '0';
         
-        -- Wait for 300 us
-        wait for 300 us;
+        -- -- Wait for 300 us
+        -- wait for 300 us;
         
-        -- Trigger pulse
-        i_trigger <= '1';
-        wait for c_i_clock_period;
-        i_trigger <= '0';
+        -- -- Trigger pulse
+        -- i_trigger <= '1';
+        -- wait for c_i_clock_period;
+        -- i_trigger <= '0';
         
-        -- Wait
-        wait for 700 us;
+        -- -- Wait
+        -- wait for 700 us;
         
-        -- Check the output
-        report "End of CASE 6." severity note;
+        -- -- Check the output
+        -- report "End of CASE 6." severity note;
 
         -- Wait for a few of microseconds
         wait for 5 us;
