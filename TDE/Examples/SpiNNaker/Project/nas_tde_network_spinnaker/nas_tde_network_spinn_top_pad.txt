@@ -1,7 +1,7 @@
 Release 14.7 - par P.20131013 (nt64)
 Copyright (c) 1995-2013 Xilinx, Inc.  All rights reserved.
 
-Mon Nov 29 19:13:29 2021
+Wed Dec 08 12:41:51 2021
 
 
 INFO: The IO information is provided in three file formats as part of the Place and Route (PAR) process.  These formats are:
@@ -86,7 +86,7 @@ Pinout by Pin Number:
 |AB20      |                           |IOBS     |IO_L3N_MOSI_CSI_B_MISO0_2    |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
 |AB21      |                           |         |DONE_2                       |         |           |              |          |         |           |         |         |          |           |                |
 |AB22      |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
-|B1        |o_data_out_to_spinnaker<6> |IOB      |IO_L83N_VREF_3               |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|B1        |o_data_out_to_spinnaker<6> |IOB      |IO_L83N_VREF_3               |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |B2        |                           |IOBM     |IO_L3P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |B3        |                           |IOBM     |IO_L5P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |B4        |                           |         |VCCO_0                       |         |           |0             |          |         |           |         |any******|          |           |                |
@@ -108,8 +108,8 @@ Pinout by Pin Number:
 |B20       |i_nas_i2s_lr               |IOB      |IO_L65P_SCP3_0               |INPUT    |LVCMOS25*  |0             |          |         |           |NONE     |         |LOCATED   |NO         |NONE            |
 |B21       |                           |IOBM     |IO_L10P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |B22       |                           |IOBS     |IO_L10N_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|C1        |o_data_out_to_spinnaker<5> |IOB      |IO_L83P_3                    |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
-|C2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|C1        |o_data_out_to_spinnaker<5> |IOB      |IO_L83P_3                    |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|C2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |C3        |                           |IOBM     |IO_L1P_HSWAPEN_0             |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |C4        |                           |IOBM     |IO_L6P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |C5        |                           |IOBM     |IO_L8P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
@@ -128,10 +128,10 @@ Pinout by Pin Number:
 |C18       |                           |IOBS     |IO_L66N_SCP0_0               |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |C19       |i_nas_i2s_bclk             |IOB      |IO_L64P_SCP5_0               |INPUT    |LVCMOS25*  |0             |          |         |           |NONE     |         |LOCATED   |NO         |NONE            |
 |C20       |                           |IOBM     |IO_L20P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|C21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|C21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |C22       |                           |IOBS     |IO_L20N_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|D1        |o_data_out_to_spinnaker<3> |IOB      |IO_L59N_3                    |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
-|D2        |o_data_out_to_spinnaker<4> |IOB      |IO_L59P_3                    |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|D1        |o_data_out_to_spinnaker<3> |IOB      |IO_L59N_3                    |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|D2        |o_data_out_to_spinnaker<4> |IOB      |IO_L59P_3                    |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |D3        |                           |IOBS     |IO_L1N_VREF_0                |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |D4        |                           |IOBM     |IO_L2P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |D5        |                           |IOBS     |IO_L2N_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
@@ -152,7 +152,7 @@ Pinout by Pin Number:
 |D20       |                           |         |TMS                          |         |           |              |          |         |           |         |         |          |           |                |
 |D21       |                           |IOBM     |IO_L28P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |D22       |                           |IOBS     |IO_L28N_VREF_1               |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|E1        |o_data_out_to_spinnaker<2> |IOB      |IO_L54N_M3A11_3              |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|E1        |o_data_out_to_spinnaker<2> |IOB      |IO_L54N_M3A11_3              |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |E2        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |E3        |                           |IOBM     |IO_L54P_M3RESET_3            |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |E4        |                           |IOBS     |IO_L60N_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -170,14 +170,14 @@ Pinout by Pin Number:
 |E16       |                           |IOBM     |IO_L37P_GCLK13_0             |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
 |E17       |                           |         |VCCO_0                       |         |           |0             |          |         |           |         |any******|          |           |                |
 |E18       |                           |         |TDI                          |         |           |              |          |         |           |         |         |          |           |                |
-|E19       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|E19       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |E20       |                           |IOBM     |IO_L32P_A17_M1A8_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |E21       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |E22       |                           |IOBS     |IO_L32N_A16_M1A9_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|F1        |o_data_out_to_spinnaker<0> |IOB      |IO_L53N_M3A12_3              |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
-|F2        |o_data_out_to_spinnaker<1> |IOB      |IO_L53P_M3CKE_3              |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|F1        |o_data_out_to_spinnaker<0> |IOB      |IO_L53N_M3A12_3              |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|F2        |o_data_out_to_spinnaker<1> |IOB      |IO_L53P_M3CKE_3              |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |F3        |                           |IOBM     |IO_L60P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|F4        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|F4        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |F5        |                           |IOBM     |IO_L82P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |F6        |                           |         |VCCO_0                       |         |           |0             |          |         |           |         |any******|          |           |                |
 |F7        |                           |IOBM     |IO_L7P_0                     |UNUSED   |           |0             |          |         |           |         |         |          |           |                |
@@ -193,11 +193,11 @@ Pinout by Pin Number:
 |F17       |i_nas_i2s_din              |IOB      |IO_L51N_0                    |INPUT    |LVCMOS25*  |0             |          |         |           |NONE     |         |LOCATED   |NO         |NONE            |
 |F18       |                           |IOBM     |IO_L1P_A25_1                 |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |F19       |                           |IOBS     |IO_L1N_A24_VREF_1            |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|F20       |o_spinn_ui_status_active   |IOB      |IO_L29N_A22_M1A14_1          |OUTPUT   |LVCMOS25*  |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|F20       |o_spinn_ui_status_active   |IOB      |IO_L29N_A22_M1A14_1          |OUTPUT   |LVCMOS33   |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |F21       |                           |IOBM     |IO_L31P_A19_M1CKE_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |F22       |                           |IOBS     |IO_L31N_A18_M1A12_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|G1        |o_ack_in_to_spinnaker      |IOB      |IO_L52N_M3A9_3               |OUTPUT   |LVCMOS25*  |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
-|G2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|G1        |o_ack_in_to_spinnaker      |IOB      |IO_L52N_M3A9_3               |OUTPUT   |LVCMOS33   |3             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|G2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |G3        |                           |IOBM     |IO_L52P_M3A8_3               |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |G4        |                           |IOBS     |IO_L58N_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |G5        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
@@ -215,10 +215,10 @@ Pinout by Pin Number:
 |G17       |                           |         |TDO                          |         |           |              |          |         |           |         |         |          |           |                |
 |G18       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |G19       |                           |IOBM     |IO_L29P_A23_M1A13_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|G20       |o_spinn_ui_status_error    |IOB      |IO_L35P_A11_M1A7_1           |OUTPUT   |LVCMOS25*  |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
-|G21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|G20       |o_spinn_ui_status_error    |IOB      |IO_L35P_A11_M1A7_1           |OUTPUT   |LVCMOS33   |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|G21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |G22       |                           |IOBS     |IO_L35N_A10_M1A2_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|H1        |i_ack_out_from_spinnaker   |IOB      |IO_L50N_M3BA2_3              |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|H1        |i_ack_out_from_spinnaker   |IOB      |IO_L50N_M3BA2_3              |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
 |H2        |                           |IOBM     |IO_L50P_M3WE_3               |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |H3        |                           |IOBS     |IO_L51N_M3A4_3               |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |H4        |                           |IOBM     |IO_L58P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -240,11 +240,11 @@ Pinout by Pin Number:
 |H20       |                           |IOBS     |IO_L33N_A14_M1A4_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |H21       |                           |IOBM     |IO_L37P_A7_M1A0_1            |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |H22       |                           |IOBS     |IO_L37N_A6_M1A1_1            |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|J1        |i_data_in_from_spinnaker<6>|IOB      |IO_L48N_M3BA1_3              |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|J1        |i_data_in_from_spinnaker<6>|IOB      |IO_L48N_M3BA1_3              |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
 |J2        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |J3        |                           |IOBM     |IO_L48P_M3BA0_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |J4        |                           |IOBM     |IO_L51P_M3A10_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|J5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|J5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |J6        |                           |IOBM     |IO_L55P_M3A13_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |J7        |                           |IOBM     |IO_L81P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |J8        |                           |         |VCCINT                       |         |           |              |          |         |           |         |1.2      |          |           |                |
@@ -257,13 +257,13 @@ Pinout by Pin Number:
 |J15       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |J16       |                           |IOBM     |IO_L19P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |J17       |                           |IOBS     |IO_L19N_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|J18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|J18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |J19       |                           |IOBM     |IO_L33P_A15_M1A10_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |J20       |                           |IOBM     |IO_L39P_M1A3_1               |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |J21       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |J22       |                           |IOBS     |IO_L39N_M1ODT_1              |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|K1        |i_data_in_from_spinnaker<4>|IOB      |IO_L47N_M3A1_3               |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
-|K2        |i_data_in_from_spinnaker<5>|IOB      |IO_L47P_M3A0_3               |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|K1        |i_data_in_from_spinnaker<4>|IOB      |IO_L47N_M3A1_3               |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|K2        |i_data_in_from_spinnaker<5>|IOB      |IO_L47P_M3A0_3               |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
 |K3        |                           |IOBS     |IO_L46N_M3CLKN_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |K4        |                           |IOBM     |IO_L46P_M3CLK_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |K5        |                           |IOBS     |IO_L49N_M3A2_3               |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -284,13 +284,13 @@ Pinout by Pin Number:
 |K20       |                           |IOBM     |IO_L38P_A5_M1CLK_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |K21       |                           |IOBM     |IO_L41P_GCLK9_IRDY1_M1RASN_1 |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |K22       |                           |IOBS     |IO_L41N_GCLK8_M1CASN_1       |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|L1        |i_data_in_from_spinnaker<3>|IOB      |IO_L41N_GCLK26_M3DQ5_3       |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
-|L2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|L1        |i_data_in_from_spinnaker<3>|IOB      |IO_L41N_GCLK26_M3DQ5_3       |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|L2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |L3        |                           |IOBM     |IO_L41P_GCLK27_M3DQ4_3       |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |L4        |                           |IOBS     |IO_L44N_GCLK20_M3A6_3        |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |L5        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |L6        |                           |IOBS     |IO_L45N_M3ODT_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|L7        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|L7        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |L8        |                           |         |VCCAUX                       |         |           |              |          |         |           |         |2.5      |          |           |                |
 |L9        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |L10       |                           |         |VCCINT                       |         |           |              |          |         |           |         |1.2      |          |           |                |
@@ -299,15 +299,15 @@ Pinout by Pin Number:
 |L13       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |L14       |                           |         |VCCINT                       |         |           |              |          |         |           |         |1.2      |          |           |                |
 |L15       |                           |IOBM     |IO_L21P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|L16       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|L16       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |L17       |                           |IOBS     |IO_L36N_A8_M1BA1_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |L18       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |L19       |                           |IOBS     |IO_L38N_A4_M1CLKN_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |L20       |                           |IOBM     |IO_L43P_GCLK5_M1DQ4_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|L21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|L21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |L22       |                           |IOBS     |IO_L43N_GCLK4_M1DQ5_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|M1        |i_data_in_from_spinnaker<1>|IOB      |IO_L40N_M3DQ7_3              |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
-|M2        |i_data_in_from_spinnaker<2>|IOB      |IO_L40P_M3DQ6_3              |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|M1        |i_data_in_from_spinnaker<1>|IOB      |IO_L40N_M3DQ7_3              |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|M2        |i_data_in_from_spinnaker<2>|IOB      |IO_L40P_M3DQ6_3              |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
 |M3        |                           |IOBM     |IO_L44P_GCLK21_M3A5_3        |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |M4        |                           |IOBS     |IO_L43N_GCLK22_IRDY2_M3CASN_3|UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |M5        |                           |IOBM     |IO_L43P_GCLK23_M3RASN_3      |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -328,11 +328,11 @@ Pinout by Pin Number:
 |M20       |                           |IOBM     |IO_L40P_GCLK11_M1A5_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |M21       |                           |IOBM     |IO_L44P_A3_M1DQ6_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |M22       |                           |IOBS     |IO_L44N_A2_M1DQ7_1           |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|N1        |i_data_in_from_spinnaker<0>|IOB      |IO_L39N_M3LDQSN_3            |INPUT    |LVCMOS25*  |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
+|N1        |i_data_in_from_spinnaker<0>|IOB      |IO_L39N_M3LDQSN_3            |INPUT    |LVCMOS33   |3             |          |         |           |NONE     |         |LOCATED   |YES        |NONE            |
 |N2        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |N3        |                           |IOBM     |IO_L39P_M3LDQS_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |N4        |                           |IOBS     |IO_L42N_GCLK24_M3LDM_3       |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|N5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|N5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |N6        |                           |IOBM     |IO_L23P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |N7        |                           |IOBS     |IO_L23N_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |N8        |                           |         |VCCAUX                       |         |           |              |          |         |           |         |2.5      |          |           |                |
@@ -345,11 +345,11 @@ Pinout by Pin Number:
 |N15       |                           |IOBS     |IO_L58N_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |N16       |                           |IOBM     |IO_L60P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |N17       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
-|N18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|N18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |N19       |                           |IOBS     |IO_L42N_GCLK6_TRDY1_M1LDM_1  |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |N20       |                           |IOBM     |IO_L45P_A1_M1LDQS_1          |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |N21       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
-|N22       |o_spinn_ui_status_reset    |IOB      |IO_L45N_A0_M1LDQSN_1         |OUTPUT   |LVCMOS25*  |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|N22       |o_spinn_ui_status_reset    |IOB      |IO_L45N_A0_M1LDQSN_1         |OUTPUT   |LVCMOS33   |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |P1        |                           |IOBS     |IO_L38N_M3DQ3_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |P2        |                           |IOBM     |IO_L38P_M3DQ2_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |P3        |                           |IOBM     |IO_L42P_GCLK25_TRDY2_M3UDM_3 |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -373,7 +373,7 @@ Pinout by Pin Number:
 |P21       |                           |IOBM     |IO_L46P_FCS_B_M1DQ2_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |P22       |                           |IOBS     |IO_L46N_FOE_B_M1DQ3_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |R1        |                           |IOBS     |IO_L37N_M3DQ1_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|R2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|R2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |R3        |                           |IOBM     |IO_L37P_M3DQ0_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |R4        |                           |IOBS     |IO_L26N_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |R5        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
@@ -392,8 +392,8 @@ Pinout by Pin Number:
 |R18       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |R19       |                           |IOBS     |IO_L53N_VREF_1               |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |R20       |                           |IOBM     |IO_L47P_FWE_B_M1DQ0_1        |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|R21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
-|R22       |o_spinn_ui_status_dump     |IOB      |IO_L47N_LDC_M1DQ1_1          |OUTPUT   |LVCMOS25*  |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
+|R21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
+|R22       |o_spinn_ui_status_dump     |IOB      |IO_L47N_LDC_M1DQ1_1          |OUTPUT   |LVCMOS33   |1             |12        |SLOW     |           |         |         |LOCATED   |NO         |NONE            |
 |T1        |                           |IOBS     |IO_L36N_M3DQ9_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |T2        |                           |IOBM     |IO_L36P_M3DQ8_3              |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |T3        |                           |IOBM     |IO_L26P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
@@ -420,7 +420,7 @@ Pinout by Pin Number:
 |U2        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |U3        |                           |IOBM     |IO_L35P_M3DQ10_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |U4        |                           |IOBM     |IO_L24P_3                    |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|U5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|U5        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |U6        |                           |IOBS     |IO_L64N_D9_2                 |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
 |U7        |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |U8        |                           |IOBS     |IO_L57N_2                    |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
@@ -433,7 +433,7 @@ Pinout by Pin Number:
 |U15       |                           |IOBS     |IO_L23N_2                    |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
 |U16       |                           |IOBM     |IO_L4P_2                     |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
 |U17       |                           |         |VFS                          |         |           |              |          |         |           |         |         |          |           |                |
-|U18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|U18       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |U19       |                           |IOBM     |IO_L59P_1                    |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |U20       |                           |IOBM     |IO_L49P_M1DQ10_1             |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |U21       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
@@ -461,7 +461,7 @@ Pinout by Pin Number:
 |V21       |                           |IOBM     |IO_L50P_M1UDQS_1             |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |V22       |                           |IOBS     |IO_L50N_M1UDQSN_1            |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |W1        |                           |IOBS     |IO_L33N_M3DQ13_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
-|W2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |2.50     |          |           |                |
+|W2        |                           |         |VCCO_3                       |         |           |3             |          |         |           |         |3.30     |          |           |                |
 |W3        |                           |IOBM     |IO_L33P_M3DQ12_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |W4        |                           |IOBM     |IO_L2P_3                     |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |W5        |                           |         |VCCO_2                       |         |           |2             |          |         |           |         |any******|          |           |                |
@@ -480,7 +480,7 @@ Pinout by Pin Number:
 |W18       |                           |IOBS     |IO_L2N_CMPMOSI_2             |UNUSED   |           |2             |          |         |           |         |         |          |           |                |
 |W19       |                           |         |GND                          |         |           |              |          |         |           |         |         |          |           |                |
 |W20       |                           |IOBM     |IO_L51P_M1DQ12_1             |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
-|W21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |2.50     |          |           |                |
+|W21       |                           |         |VCCO_1                       |         |           |1             |          |         |           |         |3.30     |          |           |                |
 |W22       |                           |IOBS     |IO_L51N_M1DQ13_1             |UNUSED   |           |1             |          |         |           |         |         |          |           |                |
 |Y1        |                           |IOBS     |IO_L32N_M3DQ15_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
 |Y2        |                           |IOBM     |IO_L32P_M3DQ14_3             |UNUSED   |           |3             |          |         |           |         |         |          |           |                |
