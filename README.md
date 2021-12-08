@@ -101,5 +101,20 @@ Copyright © 2020 Daniel Gutierrez-Galan<br>
 
 <h2 name="Cite">Cite this work</h2>
 <p align="justify">
-Waiting for publication...
+<b>APA</b>: Gutierrez-Galan, D., Schoepe, T., Dominguez-Morales, J. P., Jimenez-Fernandez, A., Chicca, E., & Linares-Barranco, A. (2021). An event-based digital time difference encoder model implementation for neuromorphic systems. IEEE Transactions on Neural Networks and Learning Systems.
+</p>
+<p align="justify">
+<b>ISO 690</b>: GUTIERREZ-GALAN, Daniel, et al. An event-based digital time difference encoder model implementation for neuromorphic systems. IEEE Transactions on Neural Networks and Learning Systems, 2021.
+</p>
+<p align="justify">
+<b>MLA</b>: Gutierrez-Galan, Daniel, et al. "An event-based digital time difference encoder model implementation for neuromorphic systems." IEEE Transactions on Neural Networks and Learning Systems (2021).
+</p>
+<p align="justify">
+<b>BibTeX</b>: @article{gutierrez2021event,
+  title={An event-based digital time difference encoder model implementation for neuromorphic systems},
+  author={Gutierrez-Galan, Daniel and Schoepe, Thorben and Dominguez-Morales, Juan P and Jimenez-Fernandez, Angel and Chicca, Elisabetta and Linares-Barranco, Alejandro},
+  journal={IEEE Transactions on Neural Networks and Learning Systems},
+  year={2021},
+  publisher={IEEE}
+}
 </p>
