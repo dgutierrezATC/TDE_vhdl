@@ -78,6 +78,7 @@ architecture Behavioral of tde_tb is
             i_clock              : in  std_logic;
             i_nreset             : in  std_logic;
             i_tr_tick            : in  std_logic;
+			i_mode               : in  std_logic;
             i_facilitatory       : in  std_logic;
 			i_trigger            : in  std_logic;
 			i_tau                : in  std_logic_vector((g_LOG2NBITS - 1) downto 0);
@@ -97,13 +98,14 @@ architecture Behavioral of tde_tb is
     -- component generics
     constant g_NBITS              : integer range 0 to 32         := 16;
 	constant g_LOG2NBITS          : integer range 0 to 5          := 4;
-	constant g_SPIKEGEN_METHOD    : integer range 0 to 1          := 1;
+	constant g_SPIKEGEN_METHOD    : integer range 0 to 1          := 0;
     constant g_TWO_POW_NBITS_DATA : integer                       := 65536;
 
     -- component input ports
     signal i_clock          : std_logic := '0';
     signal i_nreset         : std_logic := '0';
     signal i_tr_tick        : std_logic := '0';
+	signal i_mode           : std_logic := '1';
     signal i_facilitatory   : std_logic := '0';
 	signal i_trigger        : std_logic := '0';
 	signal i_tau            : std_logic_vector((g_LOG2NBITS - 1) downto 0) := (others => '0');
@@ -125,7 +127,7 @@ architecture Behavioral of tde_tb is
 	
 	-- Simulator options: CHECK BEFORE RUN!
 	constant c_is_ModelSim : boolean := true; -- If true, ModelSIM should be used. If false, VivadoSim should be used.
-	constant c_absolute_path : string := "D:/Universidad/Repositorios/GitHub/Doctorado/TDE_vhdl/TDE/Testbench/Results/Files/"; -- Absolute path to the testbench files
+	constant c_absolute_path : string := "D:/Proyectos/Universidad/GitHub/Dani_repos/TDE_vhdl/TDE/Testbench/Results/Files/"; -- Absolute path to the testbench files
 	
     -- Clock divisor value
     constant c_i_tr_tick_divisor_value : integer range 0 to 100000 := 50;  -- Clock divisor value: 20ns * 50 = 1000 ns = 1us; 50000 to work with ms
@@ -153,12 +155,12 @@ architecture Behavioral of tde_tb is
 	-- Case 5: 1 facilitatory and 1 trigger after 600 us
 	-- Case 6: 1 facilitatory and 1 trigger after 100 us and another after (100+) 300 us
 	-- Case 7: 1 facilitatory and 1 facilitatory after 100 us and 1 trigger after (100+) 300 us
-	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "00000001";  --Set to '1' to activate: 0 LSB, 7 MSB
+	constant c_basic_behavioral_test_cases_selection : std_logic_vector(7 downto 0) := "00100000";  --Set to '1' to activate: 0 LSB, 7 MSB
 	
-	constant c_basic_behavioral_test                 : boolean := true;  -- If true, TDE behavioral test with basic cases will be launched
-	constant c_delta_t_variation_test                : boolean := false; --If true, TDE behavioral test with delta_t variation will be launched
+	constant c_basic_behavioral_test                 : boolean := false;  -- If true, TDE behavioral test with basic cases will be launched
+	constant c_delta_t_variation_test                : boolean := false; -- If true, TDE behavioral test with delta_t variation will be launched
 	constant c_global_delta_t_variation_test         : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE detec time will be launched
-	constant c_tunning_curves_test                   : boolean := false; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
+	constant c_tunning_curves_test                   : boolean := true; -- If true, TDE behavioral test with delta_t variation and multiple TDE config will be launched
 	
 	-- Params for the tunning curves test
 	-- For 4 TDEs:
@@ -167,6 +169,15 @@ architecture Behavioral of tde_tb is
 	--		- TDE2:
 	--		- TDE3:
 	-- Microseconds --
+	constant c_tde_population : integer := 4;
+	type t_array_nbits is array (0 to (c_tde_population - 1)) of std_logic_vector((g_NBITS - 1) downto 0);
+	constant c_tunning_curves_detection_time_values : t_array_nbits := (x"0064", x"012C", x"01F4", x"02BC");
+
+	type t_array_log2nbits is array (0 to (c_tde_population - 1)) of std_logic_vector((g_LOG2NBITS - 1) downto 0);
+	constant c_tunning_curves_tau_values : t_array_log2nbits := (x"0", x"0", x"0", x"0");
+	constant c_tunning_curves_weight_time_values : t_array_log2nbits := (x"5", x"5", x"5", x"5");
+	constant c_tunning_curves_decay_time_values : t_array_log2nbits := (x"0", x"0", x"0", x"0");
+	-- Milliseconds --
 	-- constant c_tde_population : integer := 4;
 	-- type t_array_nbits is array (0 to (c_tde_population - 1)) of std_logic_vector((g_NBITS - 1) downto 0);
 	-- constant c_tunning_curves_detection_time_values : t_array_nbits := (x"0064", x"012C", x"01F4", x"02BC");
@@ -175,15 +186,6 @@ architecture Behavioral of tde_tb is
 	-- constant c_tunning_curves_tau_values : t_array_log2nbits := (x"0", x"0", x"0", x"0");
 	-- constant c_tunning_curves_weight_time_values : t_array_log2nbits := (x"9", x"6", x"5", x"3");
 	-- constant c_tunning_curves_decay_time_values : t_array_log2nbits := (x"2", x"1", x"2", x"2");
-	-- Milliseconds --
-	constant c_tde_population : integer := 4;
-	type t_array_nbits is array (0 to (c_tde_population - 1)) of std_logic_vector((g_NBITS - 1) downto 0);
-	constant c_tunning_curves_detection_time_values : t_array_nbits := (x"0064", x"012C", x"01F4", x"02BC");
-
-	type t_array_log2nbits is array (0 to (c_tde_population - 1)) of std_logic_vector((g_LOG2NBITS - 1) downto 0);
-	constant c_tunning_curves_tau_values : t_array_log2nbits := (x"0", x"0", x"0", x"0");
-	constant c_tunning_curves_weight_time_values : t_array_log2nbits := (x"9", x"6", x"5", x"3");
-	constant c_tunning_curves_decay_time_values : t_array_log2nbits := (x"2", x"1", x"2", x"2");
 	
 	signal tb_new_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process there is a new iteration
 	signal tb_end_delta_t_value : std_logic := '0'; -- Flag to indicate the saving_out process that the iteration finished
@@ -236,6 +238,7 @@ begin  -- architecture Behavioral
             i_clock              => i_clock,
             i_nreset             => i_nreset,
             i_tr_tick            => i_tr_tick,
+			i_mode			     => i_mode,
             i_facilitatory       => i_facilitatory,
 			i_trigger            => i_trigger,
 			i_tau                => i_tau,
@@ -1867,7 +1870,8 @@ begin  -- architecture Behavioral
 		p_spying_sgen_val_to_generate: process
 		begin
 			--init_signal_spy("/tde_tb/DUT/spike_generator_0/r_value_to_generate","/spy_spikegen_val2gen", 1);
-			init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			--init_signal_spy("/tde_tb/DUT/w_value_to_generate","/spy_spikegen_val2gen", 1);
+			init_signal_spy("/tde_tb/DUT/w_value_to_generate_mux","/spy_spikegen_val2gen", 1);
 			--init_signal_spy("/tde_tb/DUT/w_sgen_val2gen_feedback","/spy_spikegen_val2gen", 1);
 			wait;
 		end process p_spying_sgen_val_to_generate;
@@ -1906,7 +1910,8 @@ begin  -- architecture Behavioral
 		---------------------------------------------------------------------------
 		p_spying_sgen_clkdiv_value: process
 		begin
-			init_signal_spy("/tde_tb/DUT/w_clkdiv_value","/spy_spikegen_clk_div", 1);
+			--init_signal_spy("/tde_tb/DUT/w_clkdiv_value","/spy_spikegen_clk_div", 1);
+			init_signal_spy("/tde_tb/DUT/w_clkdiv_value_mux","/spy_spikegen_clk_div", 1);
 			wait;
 		end process p_spying_sgen_clkdiv_value;
 		
