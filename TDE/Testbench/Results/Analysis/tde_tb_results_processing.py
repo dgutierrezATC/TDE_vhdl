@@ -38,7 +38,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 #
 
 # NOTE: check this path before running this script 
-source_files_absolute_path = "D:\\Universidad\\Repositorios\\GitHub\\Doctorado\\TDE_vhdl\\TDE\\Testbench\\Results\\Files\\"
+source_files_absolute_path = "D:\\Proyectos\\Universidad\\GitHub\\Dani_repos\\TDE_vhdl\\TDE\\Testbench\\Results\\Files\\"
 
 #source_files_absolute_path = "..\\Files\\"
 
@@ -1100,4 +1100,4 @@ def plotTuningCurvesOfTDEPopulation(files_start_index, files_end_index):
     fig.savefig('tde_population_tuning_curve_us.svg')
     
 
-#plotTuningCurvesOfTDEPopulation(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
+plotTuningCurvesOfTDEPopulation(int(TDE_results_datafiles_order.output_spikes_delta_t_case_0.value), int(TDE_results_datafiles_order.output_spikes_delta_t_case_6.value))
