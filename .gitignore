@@ -460,3 +460,7 @@ TDE/Examples/FPGA_test/fpga_ise/fpga_test_top_tb_par.prj
 TDE/Examples/FPGA_test/fpga_ise/fpga_test_top_tb_beh.prj
 TDE/Examples/FPGA_test/fpga_ise/fpga_test_top_summary.xml
 TDE/Examples/FPGA_test/fpga_ise/fpga_test_top_pad.txt
+TDE/Examples/iTDE_SpiNNaker/Project/nas_tde_network_spinnaker/nas_tde_network_spinn_top_pad.txt
+TDE/Examples/iTDE_SpiNNaker/Project/nas_tde_network_spinnaker/nas_tde_network_spinn_top_summary.xml
+TDE/Examples/iTDE_SpiNNaker/Project/nas_tde_network_spinnaker/nas_tde_network_spinn_top_usage.xml
+TDE/Examples/iTDE_SpiNNaker/Project/nas_tde_network_spinnaker/webtalk_pn.xml
